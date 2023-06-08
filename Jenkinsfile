@@ -1,4 +1,4 @@
-@Library('global') libglobal
+@Library('global@develop') libglobal
 pipeline {
     agent any
 
