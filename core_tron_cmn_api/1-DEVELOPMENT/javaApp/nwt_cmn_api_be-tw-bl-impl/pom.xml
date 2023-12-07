@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>nwt_cmn_api_be.javaApp</artifactId>
+        <groupId>com.mapfre.tron</groupId>
+        <version>24.01.20-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>nwt_cmn_api_be-tw-bl-impl</artifactId>
+    <packaging>jar</packaging>
+
+    <name>${project.artifactId}:${project.version}</name>
+    <description>Issue</description>
+
+    <properties>
+        <sonar.projectKey>${project.artifactId}</sonar.projectKey>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <dependencies>
+        <dependency>
+            <groupId>com.mapfre.tron</groupId>
+            <artifactId>nwt_cmn_api_be-bl-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.mapfre.tron</groupId>
+            <artifactId>nwt_cmn_api_be-tw-dl-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.mapfre.tron</groupId>
+            <artifactId>nwt_api-commons</artifactId>
+        </dependency>
+    </dependencies>
+</project>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.mapfre.tron</groupId>
+    <artifactId>nwt_cmn_api_be.DEVELOPMENT</artifactId>
+    <version>24.01.20-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>nwt_cmn_api_be.javaApp</artifactId>
+  <packaging>pom</packaging>
+
+  <name>${project.artifactId}:${project.version}</name>
+
+  <properties>
+    <gaia.folder>1-DEVELOPMENT/javaApp</gaia.folder>
+    <sonar.projectKey>${project.artifactId}</sonar.projectKey> 
+  </properties>
+
+  <modules>
+    <module>commons</module>
+    <module>nwt_api-bo</module>
+	<module>config</module>
+    <module>nwt_api-commons</module>
+    <module>nwt_cmn_api_be-bl-api</module>
+    <module>nwt_cmn_api_be-nwt-bl-impl</module>
+    <module>nwt_cmn_api_be-nwt-dl-api</module>
+    <module>nwt_cmn_api_be-nwt-dl-impl</module>
+    <module>nwt_cmn_api_be-sr-api</module>
+    <module>nwt_cmn_api_be-sr-impl</module>
+    <module>nwt_cmn_api_be-tw-bl-impl</module>
+    <module>nwt_cmn_api_be-tw-dl-api</module>
+    <module>nwt_cmn_api_be-tw-dl-impl</module>
+    <module>nwt_cmn_api-gdc</module>
+    <module>nwt_cmn_api-vld</module>
+    <module>nwt_cmn_api-sfv</module>
+	<module>nwt_cmn_api-sfv-pgm</module>
+  </modules>
+</project>

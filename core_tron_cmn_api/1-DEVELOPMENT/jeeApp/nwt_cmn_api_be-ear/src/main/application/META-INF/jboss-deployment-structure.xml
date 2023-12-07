@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<jboss-deployment-structure xmlns="urn:jboss:deployment-structure:1.2">
+    <ear-subdeployments-isolated>false</ear-subdeployments-isolated>
+    <deployment>
+        <dependencies>
+            <!-- GAIA zero config distribution -->
+            <module name="com.mapfre.dgtp.gaia.MAPFRE_GAIA_ENVCONFIG_DIST" slot="3.1.1" export="true"
+                    meta-inf="export"/>
+            <!-- Application zero config module -->
+            <module name="com.mapfre.tron.nwt_cmn_api_be.zeroConfig" slot="${project.version}" export="true" meta-inf="export" />
+            <!-- Application log4m module -->
+            <module name="com.mapfre.tron.nwt_cmn_api_be.MAPFRE_GAIA_LOG4M_nwt_cmn_api_be_DIST" export="true" meta-inf="export" />
+            <module name="oracle.jdbc" export="true" meta-inf="export"/>
+            <module name="javax.jws.api" export="true" meta-inf="export"/>
+            <module name="javax.xml.ws.api" export="true" meta-inf="export"/>
+            <module name="io.undertow.websocket" export="true" meta-inf="export"/>
+            <module name="com.sun.xml.messaging.saaj" export="true" meta-inf="export"/>
+        </dependencies>
+
+        <exclusions>
+            <module name="org.slf4j"/>
+            <module name="org.slf4j.impl"/>
+            <module name="com.fasterxml.jackson.core.jackson-annotations"/>
+            <module name="com.fasterxml.jackson.core.jackson-core"/>
+            <module name="com.fasterxml.jackson.core.jackson-databind"/>
+            <module name="com.fasterxml.jackson.jaxrs.jackson-jaxrs-json-provider"/>
+            <module name="org.codehaus.jackson.jackson-core-asl"/>
+            <module name="org.codehaus.jackson.jackson-jaxrs"/>
+            <module name="org.codehaus.jackson.jackson-mapper-asl"/>
+            <module name="org.codehaus.jackson.jackson-xc"/>
+        </exclusions>
+
+        <exclude-subsystems>
+            <subsystem name="webservices"/>
+            <subsystem name="jaxrs"/>
+            <subsystem name="logging"/>
+            <subsystem name="weld"/>
+            <subsystem name="security"/>
+            <subsystem name="jsf"/>
+            <subsystem name="bean-validation"/>
+            <subsystem name="infinispan"/>
+            <subsystem name="messaging-activemq"/>
+            <subsystem name="sar"/>
+            <subsystem name="jsr77"/>
+            <subsystem name="batch-jberet"/>
+        </exclude-subsystems>
+
+    </deployment>
+
+    <sub-deployment name="com.mapfre.tron-nwt_cmn_api_be-web-${project.version}.war"/>
+
+</jboss-deployment-structure>

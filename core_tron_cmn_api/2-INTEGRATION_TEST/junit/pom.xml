@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.mapfre.dgtp.otic</groupId>
+	<artifactId>nwt_cmn_api_be_INTEGRATION_TEST_JUNIT</artifactId>
+	<packaging>jar</packaging>
+	<version>1.0.0</version>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<sonar.projectKey>${project.artifactId}</sonar.projectKey> 
+	</properties>
+
+	<parent>
+		<groupId>com.mapfre.tron</groupId>
+		<artifactId>nwt_cmn_api_be.jeeApp</artifactId>
+		<version>0.0.2-SNAPSHOT</version>
+	</parent>
+
+	<!-- Junit: Configuración de dependencias de la aplicación a testear -->
+	<dependencies>
+
+
+	</dependencies>
+
+	<build>
+		<testResources>
+			<testResource>
+				<directory>src/test/resources</directory>
+				<filtering>true</filtering>
+			</testResource>
+		</testResources>
+	</build>
+
+	<profiles>
+		<!-- Properties used for JUnit integration tests. PropertyFile: 2-INTEGRATION_TEST\junit\src\test\resources\test.application.env.properties -->
+		<profile>
+			<id>IT_ENV_IC</id>
+			<properties>
+				<!-- <client.database.url>jdbc:oracle:thin:@MD00:1521:scorpian</client.database.url> -->
+			</properties>
+		</profile>
+		<profile>
+			<id>IT_ENV_LOCAL</id>
+			<properties>
+				<!-- <client.database.url>jdbc:oracle:thin:@localhost:1521:scorpian</client.database.url> -->
+			</properties>
+		</profile>
+	</profiles>
+</project>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.mapfre.tron</groupId>
+    <artifactId>nwt_evn_be.javaApp</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>nwt_evn_be-config</artifactId>
+  <packaging>jar</packaging>
+
+  <name>${project.artifactId}:${project.version}</name>
+  <description>${project.artifactId}:${project.version}</description>
+
+  <properties>
+  	<gaia.artifact.folder>config</gaia.artifact.folder>
+  </properties>
+  <dependencies>
+    <dependency>
+      <groupId>com.mapfre.tron</groupId>
+      <artifactId>nwt_evn_be-commons</artifactId>
+    </dependency>
+  </dependencies>
+
+</project>

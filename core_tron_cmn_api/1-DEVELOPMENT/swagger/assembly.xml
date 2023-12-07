@@ -1,0 +1,17 @@
+<assembly>
+<id>preparation</id>
+<formats>
+<format>zip</format>
+</formats>
+<includeBaseDirectory>false</includeBaseDirectory>
+<fileSets>
+    <fileSet>
+        <directory>${basedir}/</directory>
+        <outputDirectory>.</outputDirectory>
+        <includes>
+            <include>*.yaml</include>
+        </includes>       
+        <filtered>true</filtered>
+    </fileSet>
+</fileSets>
+</assembly>

@@ -1,0 +1,1 @@
+En esta carpeta se ubicarán los proyectos soapui con los tests de Servicios Web.

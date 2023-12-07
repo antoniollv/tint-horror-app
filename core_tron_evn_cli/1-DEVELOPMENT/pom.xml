@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.mapfre.tron</groupId>
+		<artifactId>nwt_evn_be</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+
+	<artifactId>nwt_evn_be.DEVELOPMENT</artifactId>
+	<packaging>pom</packaging>
+
+	<name>${project.artifactId}:${project.version}</name>
+
+	<properties>
+  		<gaia.folder>1-DEVELOPMENT</gaia.folder>
+  	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>com.mapfre.tron</groupId>
+				<artifactId>nwt_evn_be-web</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+				<type>war</type>
+			</dependency>
+			<dependency>
+				<groupId>com.mapfre.tron</groupId>
+				<artifactId>nwt_evn_be-web-dependencies</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+				<type>pom</type>
+			</dependency>
+			<dependency>
+				<groupId>com.mapfre.tron</groupId>
+				<artifactId>nwt_evn_be.zeroConfig</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>com.mapfre.tron</groupId>
+				<artifactId>nwt_evn_be-bo</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.mapfre.tron</groupId>
+				<artifactId>nwt_evn_be-commons</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.mapfre.tron</groupId>
+				<artifactId>nwt_evn_be-config</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>com.mapfre.tron</groupId>
+				<artifactId>nwt_evn_be-services</artifactId>
+				<version>0.0.1-SNAPSHOT</version>
+			</dependency>
+	</dependencies>
+	</dependencyManagement>
+
+<modules>  <module>javaApp</module>
+    <module>jeeApp</module>
+    <module>securityDef</module>
+    <module>zeroConfig</module>
+  </modules>
+</project>
