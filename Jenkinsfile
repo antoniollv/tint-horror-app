@@ -487,9 +487,25 @@ def getEnvironmentbyBranch(String branch) {
   }
   return environment
 }
+
 def initStageKPI() {
     println("INIT_STAGE_KPI ${env.STAGE_NAME}")
 }
+
+def getOwnerBitbucketJob(String jobName) {
+
+    // Esta funcion recupera el owner desde el job de jenkins
+    // del repositorio de Bitbucket (MAP_CORE_TRON = Producción)
+
+    //String jobName = env.JOB_NAME;
+
+    String[] str;
+    str = jobName.split('/');
+    String owner = str[0];
+
+    return owner
+}
+
 def showEnvironment() {
 
     echo "---- KPIs candidates ----"
