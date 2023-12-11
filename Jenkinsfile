@@ -539,7 +539,7 @@ def showEnvironment() {
 
 def buildWithProfiles(String profiles = 'ENV_IC') {
   echo "--compile profile = ${profiles}"
-  sh "cat /root/.m2/settings.xml"
+  // sh "cat /root/.m2/settings.xml"
     withEnv(["PROFILE_MVN=${profiles}"]) {
       if (env.BRANCH_NAME.startsWith("development") || env.BRANCH_NAME.startsWith("master") || env.BRANCH_NAME.startsWith("support/") || env.BRANCH_NAME.startsWith("release/") || env.BRANCH_NAME.startsWith("preproduction") || env.BRANCH_NAME.startsWith("production") ) {
         sh 'mvn -U clean install -B -P${PROFILE_MVN} -DskipTests -Dcobertura.skip'
