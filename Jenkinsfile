@@ -458,6 +458,15 @@ def getPomVersion(String directory = './'){
     dir(directory){
         def pom = readMavenPom()
         return pom.version
+        stage('test') {
+            steps {
+                println(containerCallTemplates(acrName: 'ACR_NAME',
+                                                credentialSecret: 'SECRET_NAME',
+                                                nodeSelectorValue: 'NODE_SELECTOR_VALUE',
+                                                nodeTaintKey: 'NODE_TAINT_KEY',
+                                                listContainers: ['java/jdk8', 'java/jdk11', 'java/jdk17', 'podman']))
+            }
+        }
     }
 }
 def getArtifactId(String directory = './'){
