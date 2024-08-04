@@ -1,0 +1,17 @@
+/* src/components/Thumbnail.css */
+.thumbnail {
+    display: inline-block;
+    margin: 0 5px;
+    cursor: pointer;
+    border: 2px solid transparent;
+  }
+  
+  .thumbnail img {
+    width: 100px;
+    height: auto;
+  }
+  
+  .thumbnail.active {
+    border-color: blue;
+  }
+  
