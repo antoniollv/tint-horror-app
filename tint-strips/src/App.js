@@ -18,7 +18,7 @@ function App() {
     {
       vignette: '/imgs/tinweb1.svg',
       bubbles: [
-        { x: '48%', y: '10%', arrowPosition: 'abajo-izquierda', text: '¿Como estas Tint?', fontSize: '32px' }
+        { x: '48%', y: '10%', arrowPosition: 'abajo-izquierda', text: '¿Como estas Tint?', fontSize: '24px' }
       ]
     },
     {
@@ -29,7 +29,7 @@ function App() {
     {
       vignette: '/imgs/tinweb3.svg',
       bubbles: [
-        { x: '27%', y: '20%', arrowPosition: 'derecha-abajo', text: 'Ya veo EXPLOSIVO!', fontSize: '42px' }
+        { x: '27%', y: '20%', arrowPosition: 'derecha-abajo', text: 'Ya veo EXPLOSIVO!', fontSize: '24px' }
       ]
     }
   ];
