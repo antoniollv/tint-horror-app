@@ -49,7 +49,7 @@ export const arrowPositionStyles = {
   `,
   'abajo-izquierda': css`
     &::before {
-      right: 75%;
+      right: 65%;
       bottom: calc(var(--arrow) / -1.5);
       transform: rotateZ(0deg) scaleX(-2);
       box-shadow: 

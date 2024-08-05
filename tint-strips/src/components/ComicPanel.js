@@ -13,7 +13,7 @@ const Bubble = styled.div`
   padding: var(--borde);
   z-index: 1;
   filter: drop-shadow(0px 0px 1px black) ;
-  max-width: 350px;
+  max-width: 180px;
   word-wrap: break-word;
   font-family: 'Anime Ace', cursive, sans-serif;
   
