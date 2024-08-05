@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 
-const SvgLoader = ({ src }) => {
+const SvgLoader = () => {
   const [svgContent, setSvgContent] = useState('');
 
   useEffect(() => {
     const fetchSvg = async () => {
       try {
-        const response = await fetch(src);
+        const response = await fetch('/tinwebp.svg');
         const text = await response.text();
         const cleanedSvg = cleanSvg(text);
         setSvgContent(cleanedSvg);
@@ -16,13 +16,13 @@ const SvgLoader = ({ src }) => {
     };
 
     fetchSvg();
-  }, [src]);
+  }, []);
 
   const cleanSvg = (content) => {
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(content, 'image/svg+xml');
     
-    const allowedTags = ['svg', 'path', 'circle', 'rect', 'line', 'polyline', 'polygon', 'text', 'g', 'image'];
+    const allowedTags = ['svg', 'path', 'circle', 'rect', 'line', 'polyline', 'polygon', 'text', 'g'];
     const elements = xmlDoc.getElementsByTagName('*');
 
     for (let i = elements.length - 1; i >= 0; i--) {
@@ -32,17 +32,13 @@ const SvgLoader = ({ src }) => {
       }
     }
 
-    const svgElement = xmlDoc.querySelector('svg');
-    if (svgElement) {
-      svgElement.setAttribute('width', '50%');
-      svgElement.setAttribute('height', 'auto');
-    }
-
     return new XMLSerializer().serializeToString(xmlDoc);
   };
 
-  return (    
-    <div dangerouslySetInnerHTML={{ __html: svgContent }} />
+  return (
+    <div>
+      <div dangerouslySetInnerHTML={{ __html: svgContent }} />
+    </div>
   );
 };
 

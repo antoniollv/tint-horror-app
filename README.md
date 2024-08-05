@@ -17,27 +17,98 @@ Buenos días, para este proyecto, vamos a utilizar una arquitectura basada en co
 
 Aquí están los pasos iniciales para montar el frontend:
 
-### Paso 1: Configuración del Proyecto
+## Paso 1: Configuración del Proyecto
 
-1. **Crear la estructura del proyecto con Create React App:**
-   ```bash
-   npx create-react-app comic-reader
-   cd comic-reader
-   ```
+1. Crear la estructura del proyecto con Create React App
 
-2. **Instalar dependencias necesarias:**
+   Ejecución en consola:
+
+  ```Bash
+      npx create-react-app comic-reader
+      cd comic-reader
+  ```
+
+```Output
+  Creating a new React app in /home/tonete/DevOps/moradores/comic-reader.
+
+  Installing packages. This might take a couple of minutes.
+  Installing react, react-dom, and react-scripts with cra-template...
+
+  added 1482 packages in 1m
+
+  261 packages are looking for funding
+  
+  run `npm fund` for details
+
+  Installing template dependencies using npm...
+
+  added 63 packages, and changed 1 package in 8s
+
+  261 packages are looking for funding
+  
+  run `npm fund` for details
+  
+  Removing template package using npm...
+
+  removed 1 package, and audited 1545 packages in 3s
+
+  261 packages are looking for funding
+  
+  run `npm fund` for details
+
+  8 vulnerabilities (2 moderate, 6 high)
+
+  To address all issues (including breaking changes), run:
+  
+  npm audit fix --force
+
+  Run `npm audit` for details.
+
+  Success! Created comic-reader at /home/tonete/DevOps/moradores/comic-reader
+
+  Inside that directory, you can run several commands:
+
+  npm start
+
+  Starts the development server.
+
+  npm run build
+
+  Bundles the app into static files for production.
+
+  npm test
+
+  Starts the test runner.
+
+  npm run eject
+
+  Removes this tool and copies build dependencies, configuration files
+
+  and scripts into the app directory. If you do this, you can’t go back!
+
+  We suggest that you begin by typing:
+
+  cd comic-reader
+
+  npm start
+```
+
+2. Instalar dependencias necesarias:
+
    - `react-i18next` para la internacionalización.
    - `axios` para hacer llamadas a APIs externas.
    - `styled-components` para manejar los estilos de manera más dinámica si se desea.
+
    ```bash
    npm install react-i18next i18next axios styled-components
    ```
 
-### Paso 2: Configuración de Internacionalización
+## Paso 2: Configuración de Internacionalización
 
-1. **Crear la configuración básica de `i18next`:**
+1. Crear la configuración básica de `i18next`
 
    Crear un archivo `i18n.js` en la carpeta `src`:
+
    ```js
    // src/i18n.js
    import i18n from 'i18next';
@@ -172,6 +243,7 @@ En esta parte, crearemos una función para traducir el texto usando un servicio 
 1. **Crear una función para traducir texto:**
 
    Crear un archivo `translationService.js` en la carpeta `src/services`:
+
    ```js
    // src/services/translationService.js
    import axios from 'axios';
