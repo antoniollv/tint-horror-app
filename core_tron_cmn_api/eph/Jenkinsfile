@@ -1,7 +1,0 @@
-@Library([
-        'tron-pipeline-library-comun',
-        'tron-config-deploy-corelab',
-        'eph-tron-pipeline-library@master',
-        'global-pipeline-library@v8.2',
-]) _
-tronApisBuild("core-tron-cmn-api")

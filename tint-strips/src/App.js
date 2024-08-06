@@ -6,33 +6,11 @@ import ComicPanel from './components/ComicPanel';
 import BackgroundImage from './components/BackgroundImage';
 import React, { useState, useEffect, useCallback } from 'react';
 import Thumbnail from './components/Thumbnail';
+import { loadConfigStrips } from './components/loadConfigStrips';
 
 function App() {
 
-  const strips = [
-    {
-      vignette: '/imgs/tinwebp.svg',
-      bubbles: []
-    },
-
-    {
-      vignette: '/imgs/tinweb1.svg',
-      bubbles: [
-        { x: '48%', y: '10%', arrowPosition: 'abajo-izquierda', text: '¿Como estas Tint?', fontSize: '24px' }
-      ]
-    },
-    {
-      vignette: '/imgs/tinweb2.svg',
-      bubbles: []
-    },
-
-    {
-      vignette: '/imgs/tinweb3.svg',
-      bubbles: [
-        { x: '27%', y: '20%', arrowPosition: 'derecha-abajo', text: 'Ya veo EXPLOSIVO!', fontSize: '24px' }
-      ]
-    }
-  ];
+  const strips = loadConfigStrips();
 
   const [currentStripIndex, setCurrentStripIndex] = useState(0);
   const [isTimerActive, setIsTimerActive] = useState(true);
