@@ -1,12 +1,13 @@
 import yaml from 'js-yaml';
-import fs from 'fs';
 
-export const loadConfigStrips = () => {
+export const loadConfigStrips = async ( i=0) => {
   try {
-    const fileContents = fs.readFileSync('src/comic.yaml', 'utf8');
+    const response = await fetch('/comics.yml');
+    const fileContents = await response.text();
     const data = yaml.load(fileContents);
-    return data;
+    return data.strips[i].vignettes;
   } catch (e) {
     console.log(e);
   }
 };
+

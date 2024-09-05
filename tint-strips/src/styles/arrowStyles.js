@@ -2,7 +2,7 @@
 import { css } from 'styled-components';
 
 export const arrowPositionStyles = {
-  'arriba-derecha': css`
+  'top-right': css`
     &::before {
       left: 60%;
       top: calc(var(--arrow) / -2);
@@ -11,7 +11,7 @@ export const arrowPositionStyles = {
         inset calc(var(--arrow)/2) calc(var(--arrow)/3) 0 0 white;      
     }
   `,
-  'arriba-izquierda': css`
+  'top-left': css`
     &::before {
       left: 10px;
       top: calc(var(--arrow) / -2);
@@ -20,7 +20,7 @@ export const arrowPositionStyles = {
         inset calc(var(--arrow)/2) calc(var(--arrow)/3) 0 0 white;
     }
   `,
-  'derecha-arriba': css`
+  'right-top': css`
     &::before {
       top: 25px;
       right: calc(var(--arrow) * -0.60);
@@ -29,7 +29,7 @@ export const arrowPositionStyles = {
         inset calc(var(--arrow)/2) calc(var(--arrow)/3) 0 0 white;
     }
   `,
-  'derecha-abajo': css`
+  'right-bottom': css`
     &::before {
       bottom: 35px;
       right: calc(var(--arrow) * -0.65);
@@ -38,7 +38,7 @@ export const arrowPositionStyles = {
         inset calc(var(--arrow)/2) calc(var(--arrow)/3) 0 0 white;
     }
   `,
-  'abajo-derecha': css`
+  'bottom-right': css`
     &::before {
       left: 65%;
       bottom: calc(var(--arrow) / -1.4);
@@ -47,7 +47,7 @@ export const arrowPositionStyles = {
         inset calc(var(--arrow)/3) calc(var(--arrow)/3) 0 0 white;
     }
   `,
-  'abajo-izquierda': css`
+  'bottom-left': css`
     &::before {
       right: 65%;
       bottom: calc(var(--arrow) / -1.5);
@@ -56,7 +56,7 @@ export const arrowPositionStyles = {
         inset calc(var(--arrow)/3) calc(var(--arrow)/3) 0 0 white;
     }
   `,
-  'izquierda-arriba': css`
+  'left-top': css`
     &::before {
       left: -20px;
       bottom: calc(var(--arrow) / 1);
@@ -65,7 +65,7 @@ export const arrowPositionStyles = {
         inset calc(var(--arrow)/3) calc(var(--arrow)/3) 0 0 white;
     }
   `,
-  'izquierda-abajo': css`
+  'left-bottom': css`
     &::before {
       bottom: calc(var(--arrow) / 2 * -1);
       left: calc(var(--arrow) * -1);

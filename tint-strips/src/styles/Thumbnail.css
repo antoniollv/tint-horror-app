@@ -14,4 +14,23 @@
   .thumbnail.active {
     border-color: blue;
   }
+  .chapter-selector {
+    display: flex;
+    flex-direction: column;
+    margin-right: 20px; /* Espacio entre el selector y las thumbnails */
+    padding: 10px;
+  }
   
+  .chapter {
+    margin-bottom: 10px;
+    cursor: pointer;
+    padding: 5px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    transition: background-color 0.3s, border-color 0.3s;
+  }
+  
+  .chapter.active {
+    background-color: lightblue;
+    border-color: blue;
+  }

@@ -13,7 +13,7 @@ const Bubble = styled.div`
   padding: var(--borde);
   z-index: 1;
   filter: drop-shadow(0px 0px 1px black) ;
-  max-width: 180px;
+  max-width: 300px;
   word-wrap: break-word;
   font-family: 'Anime Ace', cursive, sans-serif;
   
@@ -35,9 +35,9 @@ const ComicPanel = ({ bubble }) => {
   const [translatedText, setTranslatedText] = useState(bubble.text);
   
   useEffect(() => {
-    //const browserLanguage = navigator.language || navigator.languages[0].substring(0, 2);
-    const browserLanguage = 'en';
-    if (browserLanguage !== 'es') {
+    const browserLanguage = navigator.language.split('-')[0] || navigator.languages[0].split('-')[0];
+    //const browserLanguage = 'en';
+    if (browserLanguage !== 'en') {
       translateText(bubble.text, browserLanguage)
         .then((translated) => setTranslatedText(translated))
         .catch((err) => console.error('Translation error:', err));

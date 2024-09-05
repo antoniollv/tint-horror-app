@@ -1,0 +1,44 @@
+strips:
+  - vignettes:
+      - vignette: '/imgs/tinwebp.svg'
+        bubbles: []
+      - vignette: '/imgs/tinweb1.svg'
+        bubbles: 
+          - x: '48%'
+            y: '10%'
+            arrowPosition: 'bottom-left'
+            text: 'How are you Tint?'
+            fontSize: '32px'
+      - vignette: '/imgs/tinweb2.svg'
+        bubbles: []
+      - vignette: '/imgs/tinweb3.svg'
+        bubbles: 
+          - x: '27%'
+            y: '20%'
+            arrowPosition: 'right-bottom'
+            text: "I see, EXPLOSIVE!"
+            fontSize: '32px'
+  - vignettes:
+      - vignette: '/imgs/tinwebp.svg'
+        bubbles: []
+      - vignette: '/imgs/tinweb2-1.svg'
+        bubbles: 
+          - x: '28%'
+            y: '3%'
+            arrowPosition: 'right-bottom'
+            text: 'Look, Tint! The rats flee from the boat'
+            fontSize: '32px'
+      - vignette: '/imgs/tinweb2-2.svg'
+        bubbles:
+          - x: '42%'
+            y: '5%'
+            arrowPosition: 'bottom-left'
+            text: 'Well, not all rats'
+            fontSize: '32px'
+      - vignette: '/imgs/tinweb2-3.svg'
+        bubbles: 
+          - x: '40%'
+            y: '5%'
+            arrowPosition: 'bottom-left'
+            text: "When the ship sinks, only the damned remain"
+            fontSize: '32px'

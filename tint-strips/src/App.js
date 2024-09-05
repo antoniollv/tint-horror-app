@@ -1,4 +1,3 @@
-
 // src/App.js
 import './App.css';
 import ComicPanel from './components/ComicPanel';
@@ -6,31 +5,41 @@ import ComicPanel from './components/ComicPanel';
 import BackgroundImage from './components/BackgroundImage';
 import React, { useState, useEffect, useCallback } from 'react';
 import Thumbnail from './components/Thumbnail';
-import { loadConfigStrips } from './components/loadConfigStrips';
-
+import { loadConfigStrips } from './components/loadConfigStrips.js';
 function App() {
 
-  const strips = loadConfigStrips();
+  const [strips, setStrips] = useState([]);
 
+  useEffect(() => {
+    const fetchStrips = async () => {
+      const stripsData = await loadConfigStrips();
+
+      // Verificar que stripsData sea un array antes de usarlo
+      if (Array.isArray(stripsData)) {
+        setStrips(stripsData);
+      } else {
+        console.error('stripsData is not an array');
+      }
+    };
+
+    fetchStrips();
+  }, []);
+    
   const [currentStripIndex, setCurrentStripIndex] = useState(0);
   const [isTimerActive, setIsTimerActive] = useState(true);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
-
   const nextStrip = useCallback(() => {
     setCurrentStripIndex((prevStrip) => (prevStrip + 1) % strips.length);
   }, [strips.length]);
-
   const previousStrip = useCallback(() => {
     setCurrentStripIndex((prevStrip) => (prevStrip - 1 + strips.length) % strips.length);
   }, [strips.length]);
-
   const goToSlide = useCallback((index) => {
     setIsImageLoaded(false); // Reset image loaded state
     setCurrentStripIndex(index);
     setIsTimerActive(false);
     //setIsTimerActive(true);
   }, []);
-
   // Avanzar automáticamente cada 4 segundos
   useEffect(() => {
     let timer;
@@ -39,7 +48,6 @@ function App() {
     }
     return () => clearInterval(timer);
   }, [nextStrip, isTimerActive]);
-
   // Manejar eventos de teclado
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -58,8 +66,11 @@ function App() {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [nextStrip, previousStrip]);
-
   const currentStrip = strips[currentStripIndex];
+
+  if (!strips || strips.length === 0) {
+    return <p>Loading...</p>;
+  }
   
   return (    
     <div className="App">
@@ -87,5 +98,4 @@ function App() {
     </div>    
   );
 }
-
 export default App;
