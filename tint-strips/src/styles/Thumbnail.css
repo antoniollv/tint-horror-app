@@ -14,22 +14,29 @@
   .thumbnail.active {
     border-color: blue;
   }
+
   .chapter-selector {
+    position: fixed; /* Mantiene el selector fijo en la parte izquierda */
+    top: 0;
+    left: 0;
+    width: 150px; /* Ancho fijo del selector */
     display: flex;
-    flex-direction: column;
-    margin-right: 20px; /* Espacio entre el selector y las thumbnails */
+    flex-direction: column; /* Alinea los capítulos en vertical */
+    background-color: rgba(99, 99, 99, 0.5);
     padding: 10px;
+    box-shadow: 5px 0 5px rgba(0, 0, 0, 0.2); /* Sombra para destacarlo */
   }
   
   .chapter {
     margin-bottom: 10px;
     cursor: pointer;
-    padding: 5px;
+    padding: 8px;
     border: 1px solid transparent;
     border-radius: 4px;
+    text-align: center;
     transition: background-color 0.3s, border-color 0.3s;
   }
-  
+
   .chapter.active {
     background-color: lightblue;
     border-color: blue;

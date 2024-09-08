@@ -1,6 +1,13 @@
 // src/utils/translate.js
 
-const endpoint = "http://localhost:5000/translate";
+let endpoint = process.env.REACT_APP_TRANSLATION_API_URL;
+if (!endpoint || endpoint.trim() === "") {
+  endpoint = "http://localhost:5000/translate";
+}
+let traslation_api_key = process.env.REACT_APP_TRANSLATION_API_KEY;
+if (!traslation_api_key || traslation_api_key.trim() === "") {
+  traslation_api_key = "";
+}
 
 export const translateText = async (text, targetLanguage = 'es') => {
   try {
@@ -12,7 +19,7 @@ export const translateText = async (text, targetLanguage = 'es') => {
         target: targetLanguage,
         //target: "it",
         format: "text",
-        api_key: ""  // Si es necesario, se puede agregar un API key
+        api_key: traslation_api_key
       }),
       headers: { "Content-Type": "application/json" }
     });

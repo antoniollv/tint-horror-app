@@ -11,6 +11,24 @@ const ImageContainer = styled.div`
   justify-content: center; /* Centra la imagen horizontalmente */
   align-items: center; /* Centra la imagen verticalmente */
   overflow: hidden; /* Oculta cualquier parte de la imagen que se desborde */
+
+  /* Media query para pantallas más pequeñas */
+  @media (max-width: 768px) {
+    height: 90vh; /* Ajusta la altura a 80% del viewport en tablets */
+    display: flex;
+    svg {
+      width: 300pt; /* Sobrescribir el ancho del SVG en móviles */
+    }
+  }
+
+  @media (max-width: 480px) {
+    height: 90vh; /* Ajusta la altura a 70% del viewport en teléfonos */
+    padding: 10px; /* Añadir padding para evitar que se vea muy comprimido */
+    display: flex;
+    svg {
+      width: 300pt; /* Sobrescribir el ancho del SVG en móviles */
+    }
+  }
 `;
 
 
