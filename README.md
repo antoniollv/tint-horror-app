@@ -1,6 +1,6 @@
 # moradores.es
 
-# Introducción
+## Introducción
 
 Vamos a construir desde cero un proyecto para leer cómics  mediante navegador. vamos a crear un servicio web para leer tiras de cómics, el servio tendrá las siguientes características:
 
