@@ -1,32 +1,152 @@
-# moradores.es
+# tint-horror-app
 
-## Introducción
+Aplicación web React para visualizar tiras de cómics desde el navegador. La app carga un fichero de configuración YAML y dibuja las viñetas con sus bocadillos de texto. Este README está pensado para que puedas arrancar, desplegar y versionar sin problemas.
 
-Vamos a construir desde cero un proyecto para leer cómics  mediante navegador. vamos a crear un servicio web para leer tiras de cómics, el servio tendrá las siguientes características:
+## Estructura
 
-- Soporte multilenguaje, por defecto se mostraran las viñetas en el idioma que tenga defino el navegador por defecto, se habilitará una opción para poder cambiar al idioma deseado
-  - Los texto se cargaran en la viñeta desde un servio externo, estarán en español y se traducirán automáticamente al idioma mostrado, mediante una consulta a otro servicio externo.
-  - Se crearán los bocadillos de forma dinámica para envolver correctamente al los textos, el fondo del bocadillo será en blanco y recibirá dos parámetros, posición del bocadillo, que sera el centro del mismo y la posición final de la flecha que apunta al personaje que habla.
-  - la fuente del texto imitará en mayúsculas a una escritura a mano, ha de ser de uso libre y clara en su lectura
+- App React: [tint-strips/](tint-strips)
+- Configuración de releases: [.releaserc.json](.releaserc.json)
+- Workflow de publicación: [.github/workflows/publish.yml](.github/workflows/publish.yml)
+- Changelog: [CHANGELOG.md](CHANGELOG.md)
 
-- Usaremos tecnología de contenedores para envolver los distintos servicios, comunicándose entre ellos mediante llamadas a las distintas APIS o servicios
+## Requisitos
 
-Para empezar vamos a montar un Frontend al que pasaremos como parámetro un texto posición de bocadillo de texto y posición de la flecha. La tecnología a usar para representar el dibujo sera CSS o SVG svg y el lenguaje de Frontend el que consideres mas apropiado para la tarea teniendo en cuenta rapidez, sencillez y de amplio uso por la comunidad de desarrolladores de software. El dibujo base sera un cuadrado blanco de 2040px de lado, se adaptara a los distintos dispositivos de visualización.
+- Node.js 22+
+- npm 9+
 
-Buenos días, para este proyecto, vamos a utilizar una arquitectura basada en contenedores para soportar la lectura de cómics en varios idiomas. Vamos a dividir el proyecto en varias partes para facilitar su desarrollo y mantenimiento. La tecnología de frontend que utilizaremos será React.js, ya que es ampliamente utilizada, tiene una gran comunidad de desarrolladores y permite una rápida creación de interfaces interactivas. Usaremos SVG para la representación de los dibujos y CSS para el estilo.
+## Desarrollo local
 
-Aquí están los pasos iniciales para montar el frontend:
+Desde la carpeta de la app, los pasos habituales son:
 
-[Keep all existing content from line 20 to line 350]
+| Paso | Descripción | Comando |
+| --- | --- | --- |
+| 1 | Instalar dependencias. | `npm install` |
+| 2 | Arrancar en desarrollo. | `npm run dev` |
+| 3 | Compilar para producción. | `npm run build` |
+
+## Configuración de datos
+
+La app carga un YAML con las tiras desde la ruta:
+
+- `VITE_YAML_CONFIG_PATH` si está definida
+- `/comics.yml` si no hay variable
+
+El fichero debe estar en `public/` y se copiará al build.
+
+Las imágenes deben estar en `tint-strips/public/imgs/` para que se resuelvan con la ruta `/imgs/`.
+
+Variables alternativas compatibles:
+
+- `REACT_APP_YAML_CONFIG_PATH`
+- `REACT_APP_IMAGE_PATH`
+- `REACT_APP_TRANSLATION_API_URL`
+- `REACT_APP_TRANSLATION_API_KEY`
+
+## Despliegue en S3 (SPA)
+
+La app es una SPA sin rutas del lado cliente, por lo que S3 es suficiente.
+
+Checklist rápido:
+
+- Compilar: `npm run build`
+- Subir **el contenido** de `tint-strips/build/` a S3
+- Static website hosting:
+  - Index document: `index.html`
+  - Error document: `index.html` (por compatibilidad futura con rutas)
+
+En [tint-strips/package.json](tint-strips/package.json) se usa `"homepage": "."` para rutas relativas.
+
+### Política pública del bucket (si no usas CloudFront)
+
+Recuerda habilitar acceso público (solo lectura) al bucket. Ejemplo de policy:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PublicReadGetObject",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::TU_BUCKET/*"
+    }
+  ]
+}
+```
+
+### Opcional: CloudFront
+
+Si quieres HTTPS, mejor caché y dominio propio:
+
+- Crea una distribución con origen en el bucket S3
+- Configura `index.html` como Default Root Object
+- (Si hay rutas en el futuro) usa un Custom Error Response 404 → `/index.html` (200)
+- Activa invalidaciones al publicar nuevas versiones
+
+## Versionado y releases (semantic-release)
+
+El flujo automático está preparado para:
+
+- Generar tag en `main` con formato `vX.Y.Z`
+- Actualizar `CHANGELOG.md`
+- Crear GitHub Release
+- Hacer *bump* de versión en `develop` (package.json + package-lock.json)
+
+### Configuración
+
+- Configuración principal: [.releaserc.json](.releaserc.json)
+- Workflow en `main`: [.github/workflows/publish.yml](.github/workflows/publish.yml)
+
+### Convenciones de commit (Conventional Commits)
+
+El tipo de commit determina la versión que se publica:
+
+- `feat:` → **minor**
+- `fix:` → **patch**
+- `perf:` → **patch**
+- `refactor:` → **patch** (si cambia comportamiento)
+- `docs:`, `chore:`, `test:`, `build:`, `ci:` → **sin release**
+
+Para **major**, añade `BREAKING CHANGE:` en el body del commit.
+
+Ejemplos válidos:
+
+- `feat: añadir selector de capítulos`
+- `fix: corregir carga de comics.yml`
+- `refactor: simplificar carga de tiras`
+
+Nota: para un commit con cambio incompatible, escribe `BREAKING CHANGE:` en el cuerpo.
 
 ---
 
-## 📊 Estado Actual del Proyecto - Análisis Completo
+## Estado actual del proyecto
 
-*Última actualización: Febrero 2026*
+Resumen breve del estado del código y los puntos a revisar.
 
-### 🎯 Resumen Ejecutivo
+### Lo que está funcionando
 
-**tint-horror-app** es una aplicación web React para visualizar tiras de cómics con soporte multiidioma, navegación interactiva y traducción automática. El proyecto está en **estado funcional** con una arquitectura bien estructurada y listo para desarrollo adicional.
+- App React funcional con navegación de viñetas.
+- Bocadillos dinámicos y traducción automática.
+- Carga de configuración desde YAML.
+- Docker de desarrollo y producción.
 
-[REST OF ANALYSIS CONTENT FROM PREVIOUS MESSAGE]
+### Pendientes o a revisar
+
+- Assets (comics.yml e imágenes SVG) deben existir en public/.
+- Servicio de traducción debe estar disponible externamente.
+- Tests aún no definidos.
+
+### Archivos clave
+
+- App principal: [tint-strips/src/App.jsx](tint-strips/src/App.jsx)
+- Bocadillos: [tint-strips/src/components/ComicPanel.jsx](tint-strips/src/components/ComicPanel.jsx)
+- Config YAML: [tint-strips/src/components/loadConfigStrips.js](tint-strips/src/components/loadConfigStrips.js)
+- Traducción: [tint-strips/src/utils/translate.js](tint-strips/src/utils/translate.js)
+- Docker: [tint-strips/Dockerfile.dev](tint-strips/Dockerfile.dev) y [tint-strips/Dockerfile.pro](tint-strips/Dockerfile.pro)
+
+---
+
+## Licencia
+
+Pendiente de definir.

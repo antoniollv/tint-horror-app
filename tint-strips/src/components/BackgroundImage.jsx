@@ -1,7 +1,7 @@
 // src/components/BackgroundImage.js
 import React from 'react';
 import styled from 'styled-components';
-import SvgLoader from './SvgLoader';
+import SvgLoader from './SvgLoader.jsx';
 
 const ImageContainer = styled.div`  
   z-index: 0;
@@ -32,9 +32,9 @@ const ImageContainer = styled.div`
 `;
 
 
-const BackgroundImage = ({ src }) => (
+const BackgroundImage = ({ src, onLoad }) => (
   <ImageContainer>
-    <SvgLoader src={src} />
+    <SvgLoader src={src} onLoad={onLoad} />
   </ImageContainer>
 );
 

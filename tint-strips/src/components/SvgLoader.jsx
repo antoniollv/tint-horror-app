@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react';
+import { fetchText } from '../utils/http.js';
+import { logError } from '../utils/logger.js';
 
-const SvgLoader = ({ src }) => {
+const SvgLoader = ({ src, onLoad }) => {
   const [svgContent, setSvgContent] = useState('');
 
   useEffect(() => {
     const fetchSvg = async () => {
       try {
-        const response = await fetch(src);
-        const text = await response.text();
+        const text = await fetchText(src);
         const cleanedSvg = cleanSvg(text);
         setSvgContent(cleanedSvg);
       } catch (error) {
-        console.error('Error loading SVG:', error);
+        logError('Error loading SVG', error);
       }
     };
 
@@ -41,7 +42,13 @@ const SvgLoader = ({ src }) => {
     return new XMLSerializer().serializeToString(xmlDoc);
   };
 
-  return (    
+  useEffect(() => {
+    if (svgContent && onLoad) {
+      onLoad();
+    }
+  }, [svgContent, onLoad]);
+
+  return (
     <div dangerouslySetInnerHTML={{ __html: svgContent }} />
   );
 };

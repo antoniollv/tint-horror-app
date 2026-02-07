@@ -2,6 +2,19 @@
 import { css } from 'styled-components';
 
 export const arrowPositionStyles = {
+  'none': css`
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    filter: none;
+    max-width: none;
+    white-space: nowrap;
+
+    &::before {
+      display: none;
+      content: none;
+    }
+  `,
   'top-right': css`
     &::before {
       left: 60%;
