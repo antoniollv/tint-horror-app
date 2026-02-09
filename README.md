@@ -24,6 +24,17 @@ Desde la carpeta de la app, los pasos habituales son:
 | 2 | Arrancar en desarrollo. | `npm run dev` |
 | 3 | Compilar para producción. | `npm run build` |
 
+### Scripts disponibles (Vite)
+
+En [tint-strips/package.json](tint-strips/package.json) están definidos estos scripts:
+
+| Script | Descripción | Comando |
+| --- | --- | --- |
+| `dev` | Servidor de desarrollo. | `npm run dev` |
+| `start` | Alias de `dev`. | `npm start` |
+| `build` | Build de producción. | `npm run build` |
+| `preview` | Preview del build local. | `npm run preview` |
+
 ## Configuración de datos
 
 La app carga un YAML con las tiras desde la ruta:
