@@ -14,20 +14,114 @@ Proceso CI/CD de despliegue de la aplicación `tint-horror-app`
 
 En [infra/prerequsites.json](infra/prerequsites.json) define, por entorno:
 
-- `aws_account_id`: tu cuenta AWS.
-- `aws_region`: region de AWS.
-- `tf_state_bucket`: bucket del state de Terraform.
-- `tf_state_key`: key del state principal.
-- `infra_tf_state_key`: key del state del bucket de hosting.
 - `app_bucket_name`: nombre del bucket de hosting.
+   Determinado en el momento de la creación. El nombre del bucket debe ser único en todo AWS; se recomienda usar el nombre de la aplicación mas el entorno.
+- `aws_account_id`: tu cuenta AWS.
+   Necesario para construir el `role_arn` en los workflows que usan OIDC. Debe ser el ID numérico de 12 dígitos de la cuenta.
+- `aws_region`: region de AWS.
+   Region donde se crean los recursos. Debe coincidir con la region del bucket de state y del bucket de hosting.
+- `github_org`: organización/owner del repo.
+   Se usa en la policy de confianza OIDC para limitar quien puede asumir el rol.
+- `github_repo`: nombre del repo.
+   Se usa en la policy de confianza OIDC y como prefijo de rutas en SSM.
 - `iam_role_name` y `iam_policy_name`.
+   Nombre del rol y de la policy que usaran los workflows con OIDC. Conviene incluir el entorno para distinguir `dev` y `prod`.
+- `infra_tf_state_key`: key del state del bucket de hosting.
+   Ruta dentro del bucket de state para este modulo de infraestructura. Debe incluir el entorno.
+- `tf_state_bucket`: bucket del state de Terraform.
+   Bucket de state compartido. Debe existir y tener versioning, encryption y public access block.
+- `tf_state_key`: key del state principal.
+   Ruta principal del state. Debe incluir el entorno para evitar colisiones.
 
-También debes crear el GitHub Environment (dev o prod) y anadir los secretos de bootstrap:
+También debes crear el GitHub Environment (dev o prod) y añadir los secretos de bootstrap:
 
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
 
-Estos secretos solo se usan en el workflow de prerequisitos.
+Estos secretos solo se usan en el workflow de pre-requisitos.
+
+### Creación de usuario IAM bootstrap en consola AWS
+
+La policy de bootstrap debe permitir recursos generales. Se recomienda eliminar o desactivar la clave cuando termine el workflow.
+
+Pasos:
+
+1) Inicia sesión con la cuenta root y entra en IAM.
+2) Crea un usuario IAM (por ejemplo `bootstrap-devops`).
+3) En **Create access key**, elige **Interfaz de linea de comandos (CLI)**.
+4) Asigna permisos, a continuación.
+5) Crea el access key y copia `AWS_ACCESS_KEY_ID` y `AWS_SECRET_ACCESS_KEY` para el GitHub Environment.
+
+Permisos requeridos por el workflow de pre-requisitos:
+
+- S3: crear bucket, habilitar versioning, encryption y public access block.
+- IAM: crear/actualizar el proveedor OIDC, rol y policy.
+- SSM: crear/actualizar parámetros bajo `/repo/env/prerequisites`.
+
+Opciones de permisos:
+
+- Opción simple: adjuntar `AdministratorAccess` al usuario bootstrap y retirarla al terminar.
+- Opcion custom (recursos generales): policy propia con acciones especificas. Evita `iam:*` porque la consola bloquea `iam:PassRole` y `iam:CreateServiceLinkedRole` con `Resource: "*"`.
+
+Ejemplo de policy custom (alcance general, sin nombres de buckets):
+
+```json
+{
+   "Version": "2012-10-17",
+   "Statement": [
+      {
+         "Sid": "S3StateBucketBootstrap",
+         "Effect": "Allow",
+         "Action": [
+            "s3:CreateBucket",
+            "s3:ListBucket",
+            "s3:GetBucketLocation",
+            "s3:PutBucketVersioning",
+            "s3:PutEncryptionConfiguration",
+            "s3:PutBucketPublicAccessBlock"
+         ],
+         "Resource": "*"
+      },
+      {
+         "Sid": "IAMBootstrap",
+         "Effect": "Allow",
+         "Action": [
+            "iam:CreateOpenIDConnectProvider",
+            "iam:ListOpenIDConnectProviders",
+            "iam:GetOpenIDConnectProvider",
+            "iam:UpdateOpenIDConnectProviderThumbprint",
+            "iam:CreateRole",
+            "iam:UpdateAssumeRolePolicy",
+            "iam:GetRole",
+            "iam:CreatePolicy",
+            "iam:ListPolicies",
+            "iam:GetPolicy",
+            "iam:CreatePolicyVersion",
+            "iam:ListPolicyVersions",
+            "iam:DeletePolicyVersion",
+            "iam:AttachRolePolicy"
+         ],
+         "Resource": "*"
+      },
+      {
+         "Sid": "SSMPrerequisitesWrite",
+         "Effect": "Allow",
+         "Action": [
+            "ssm:PutParameter",
+            "ssm:GetParameter",
+            "ssm:GetParameters"
+         ],
+         "Resource": "*"
+      },
+      {
+         "Sid": "STSIdentity",
+         "Effect": "Allow",
+         "Action": "sts:GetCallerIdentity",
+         "Resource": "*"
+      }
+   ]
+}
+```
 
 ## Workflows y responsabilidades
 
@@ -37,7 +131,7 @@ Workflow: [tint-horror-app/.github/workflows/prerequisites.yml](tint-horror-app/
 
 Que hace:
 
-- Lee [infra/prerequsites.json](infra/prerequsites.json) segun el entorno.
+- Lee [infra/prerequsites.json](infra/prerequsites.json) según el entorno.
 - Crea el bucket S3 del state (versioning, encryption, public access block).
 - Crea proveedor OIDC si no existe.
 - Crea o actualiza el rol IAM y su policy.

@@ -1,28 +1,28 @@
 {
   "environments": {
     "dev": {
-      "aws_account_id": "000000000000",
+      "app_bucket_name": "tint-horror-app-web-dev",
+      "aws_account_id": "925989944655",
+      "aws_region": "eu-west-1",
       "github_org": "antoniollv",
       "github_repo": "tint-horror-app",
-      "aws_region": "eu-west-1",
-      "tf_state_bucket": "tint-horror-app-terraform-state",
-      "tf_state_key": "tint-horror-app/dev/terraform.tfstate",
-      "infra_tf_state_key": "tint-horror-app/dev/infra/terraform.tfstate",
-      "app_bucket_name": "tint-horror-app-web-dev",
       "iam_role_name": "GitHubActionsRole-tint-horror-app",
-      "iam_policy_name": "GitHubActionsPolicy-tint-horror-app"
+      "iam_policy_name": "GitHubActionsPolicy-tint-horror-app",
+      "infra_tf_state_key": "tint-horror-app/dev/infra/terraform.tfstate",
+      "tf_state_bucket": "tint-horror-app-terraform-state",
+      "tf_state_key": "tint-horror-app/dev/terraform.tfstate"
     },
     "prod": {
-      "aws_account_id": "000000000000",
+      "app_bucket_name": "tint-horror-app-web-prod",
+      "aws_account_id": "925989944655",
+      "aws_region": "eu-west-1",
       "github_org": "antoniollv",
       "github_repo": "tint-horror-app",
-      "aws_region": "eu-west-1",
-      "tf_state_bucket": "tint-horror-app-terraform-state",
-      "tf_state_key": "tint-horror-app/prod/terraform.tfstate",
-      "infra_tf_state_key": "tint-horror-app/prod/infra/terraform.tfstate",
-      "app_bucket_name": "tint-horror-app-web-prod",
       "iam_role_name": "GitHubActionsRole-tint-horror-app-prod",
-      "iam_policy_name": "GitHubActionsPolicy-tint-horror-app-prod"
+      "iam_policy_name": "GitHubActionsPolicy-tint-horror-app-prod",
+      "infra_tf_state_key": "tint-horror-app/prod/infra/terraform.tfstate",
+      "tf_state_bucket": "tint-horror-app-terraform-state",
+      "tf_state_key": "tint-horror-app/prod/terraform.tfstate"
     }
   }
 }
