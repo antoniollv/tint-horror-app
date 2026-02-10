@@ -58,7 +58,8 @@
         "s3:PutBucketPolicy",
         "s3:PutBucketPublicAccessBlock",
         "s3:PutBucketVersioning",
-        "s3:PutBucketWebsite"
+        "s3:PutBucketWebsite",
+        "s3:PutBucketTagging"
       ],
       "Resource": "arn:aws:s3:::${APP_BUCKET_NAME}"
     },
