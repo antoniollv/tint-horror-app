@@ -24,6 +24,52 @@
         "ssm:GetParametersByPath"
       ],
       "Resource": "arn:aws:ssm:${AWS_REGION}:*:parameter/${GITHUB_REPO}/${ENVIRONMENT_INPUT}/prerequisites/*"
+    },
+    {
+      "Sid": "SSMAppBucketWrite",
+      "Effect": "Allow",
+      "Action": [
+        "ssm:PutParameter",
+        "ssm:GetParameter",
+        "ssm:GetParameters"
+      ],
+      "Resource": "arn:aws:ssm:${AWS_REGION}:*:parameter/${GITHUB_REPO}/${ENVIRONMENT_INPUT}/app/*"
+    },
+    {
+      "Sid": "AppBucketCreate",
+      "Effect": "Allow",
+      "Action": [
+        "s3:CreateBucket"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "AppBucketManage",
+      "Effect": "Allow",
+      "Action": [
+        "s3:DeleteBucket",
+        "s3:GetBucketLocation",
+        "s3:GetBucketPolicy",
+        "s3:GetBucketWebsite",
+        "s3:ListBucket",
+        "s3:PutBucketEncryption",
+        "s3:PutBucketOwnershipControls",
+        "s3:PutBucketPolicy",
+        "s3:PutBucketPublicAccessBlock",
+        "s3:PutBucketVersioning",
+        "s3:PutBucketWebsite"
+      ],
+      "Resource": "arn:aws:s3:::${APP_BUCKET_NAME}"
+    },
+    {
+      "Sid": "AppBucketObjects",
+      "Effect": "Allow",
+      "Action": [
+        "s3:DeleteObject",
+        "s3:GetObject",
+        "s3:PutObject"
+      ],
+      "Resource": "arn:aws:s3:::${APP_BUCKET_NAME}/*"
     }
   ]
 }
