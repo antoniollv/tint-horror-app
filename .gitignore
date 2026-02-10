@@ -23,7 +23,6 @@
 hs_err_pid*
 replay_pid*
 
-package-lock.json
 ### react ###
 .DS_*
 *.log
@@ -184,7 +183,6 @@ dist
 # SvelteKit build / generate output
 .svelte-kit
 
-package-lock.json
 
 ## Vectorial images
 *.svg
