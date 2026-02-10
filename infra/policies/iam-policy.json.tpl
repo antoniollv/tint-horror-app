@@ -50,6 +50,7 @@
         "s3:DeleteBucket",
         "s3:GetBucketLocation",
         "s3:GetBucketPolicy",
+        "s3:GetBucketTagging",
         "s3:GetBucketWebsite",
         "s3:ListBucket",
         "s3:PutEncryptionConfiguration",
