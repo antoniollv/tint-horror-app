@@ -4,11 +4,11 @@ output "bucket_name" {
 }
 
 output "website_endpoint" {
-  value       = aws_s3_bucket.app.website_endpoint
-  description = "S3 static website endpoint."
+  value       = format("%s.s3-website-%s.amazonaws.com", aws_s3_bucket.app.bucket, var.aws_region)
+  description = "S3 static website endpoint (constructed from bucket name and region)."
 }
 
 output "website_domain" {
-  value       = aws_s3_bucket.app.website_domain
-  description = "S3 static website domain."
+  value       = format("%s.s3-website-%s.amazonaws.com", aws_s3_bucket.app.bucket, var.aws_region)
+  description = "S3 static website domain (constructed)."
 }
