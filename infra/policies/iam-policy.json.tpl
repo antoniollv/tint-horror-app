@@ -48,22 +48,16 @@
       "Effect": "Allow",
       "Action": [
         "s3:DeleteBucket",
-        "s3:GetBucketLocation",
-        "s3:GetBucketPolicy",
-        "s3:GetBucketTagging",
-        "s3:GetBucketWebsite",
+        "s3:Get*",        
         "s3:ListBucket",
         "s3:PutEncryptionConfiguration",
-        "s3:PutBucketOwnershipControls",
-        "s3:GetBucketOwnershipControls",
+        "s3:PutBucketOwnershipControls",        
         "s3:PutBucketPolicy",
         "s3:PutBucketPublicAccessBlock",
         "s3:PutBucketVersioning",
         "s3:PutBucketWebsite",
         "s3:PutBucketTagging",
-        "s3:PutBucketAcl",
-        "s3:GetBucketAcl",        
-        "s3:GetBucketPublicAccessBlock"
+        "s3:PutBucketAcl"        
       ],
       "Resource": "arn:aws:s3:::${APP_BUCKET_NAME}"
     },
