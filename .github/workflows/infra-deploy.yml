@@ -1,0 +1,176 @@
+name: Deploy Infrastructure - App Bucket
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'GitHub Environment to use'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - prod
+      action:
+        description: 'Terraform action to perform'
+        required: true
+        default: 'apply'
+        type: choice
+        options:
+          - apply
+          - destroy
+
+jobs:
+  terraform:
+    name: Terraform ${{ inputs.action }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    permissions:
+      id-token: write
+      contents: read
+
+    defaults:
+      run:
+        working-directory: infra/terraform/app-bucket
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Load prerequisites config
+        id: load-config
+        run: |
+          set -euo pipefail
+
+          CONFIG_FILE="infra/prerequsites.json"
+          ENVIRONMENT_INPUT="${{ inputs.environment }}"
+          if [ ! -f "$CONFIG_FILE" ]; then
+            echo "Missing config file: $CONFIG_FILE"
+            exit 1
+          fi
+
+          ENV_ROOT=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env] // empty' "$CONFIG_FILE")
+          if [ -z "$ENV_ROOT" ]; then
+            echo "Environment '$ENVIRONMENT_INPUT' not found in $CONFIG_FILE"
+            exit 1
+          fi
+
+          AWS_ACCOUNT_ID=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].aws_account_id' "$CONFIG_FILE")
+          AWS_REGION=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].aws_region' "$CONFIG_FILE")
+          TF_STATE_KEY=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].infra_tf_state_key' "$CONFIG_FILE")
+          GITHUB_REPO=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].github_repo' "$CONFIG_FILE")
+          IAM_ROLE_NAME=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].iam_role_name' "$CONFIG_FILE")
+          APP_BUCKET_NAME=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].app_bucket_name' "$CONFIG_FILE")
+
+          ROLE_ARN="arn:aws:iam::${AWS_ACCOUNT_ID}:role/${IAM_ROLE_NAME}"
+          SSM_PREFIX="/${GITHUB_REPO}/${ENVIRONMENT_INPUT}/prerequisites"
+          APP_SSM_PREFIX="/${GITHUB_REPO}/${ENVIRONMENT_INPUT}/app"
+
+          echo "AWS_REGION=$AWS_REGION" >> "$GITHUB_ENV"
+          echo "TF_STATE_KEY=$TF_STATE_KEY" >> "$GITHUB_ENV"
+          echo "ROLE_ARN=$ROLE_ARN" >> "$GITHUB_ENV"
+          echo "SSM_PREFIX=$SSM_PREFIX" >> "$GITHUB_ENV"
+          echo "APP_SSM_PREFIX=$APP_SSM_PREFIX" >> "$GITHUB_ENV"
+          echo "APP_BUCKET_NAME=$APP_BUCKET_NAME" >> "$GITHUB_ENV"
+
+          echo "aws_region=$AWS_REGION" >> "$GITHUB_OUTPUT"
+          echo "role_arn=$ROLE_ARN" >> "$GITHUB_OUTPUT"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ steps.load-config.outputs.role_arn }}
+          aws-region: ${{ steps.load-config.outputs.aws_region }}
+          role-session-name: GitHubActions-AppBucket
+
+      - name: Load backend config from SSM
+        id: backend
+        run: |
+          set -euo pipefail
+
+          TF_STATE_BUCKET=$(aws ssm get-parameter \
+            --name "$SSM_PREFIX/tf_state_bucket" \
+            --query 'Parameter.Value' \
+            --output text)
+
+          echo "TF_STATE_BUCKET=$TF_STATE_BUCKET" >> "$GITHUB_ENV"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+
+      - name: Terraform Format Check
+        run: terraform fmt -check
+        continue-on-error: true
+
+      - name: Terraform Init
+        run: |
+          terraform init \
+            -backend-config="bucket=$TF_STATE_BUCKET" \
+            -backend-config="key=$TF_STATE_KEY" \
+            -backend-config="region=$AWS_REGION"
+
+      - name: Terraform Validate
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        id: plan
+        if: inputs.action == 'apply'
+        run: |
+          terraform plan -no-color -input=false \
+            -var="aws_region=$AWS_REGION" \
+            -var="bucket_name=$APP_BUCKET_NAME" \
+            -var="environment=${{ inputs.environment }}" \
+            -out=tfplan
+        continue-on-error: true
+
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+
+      - name: Terraform Apply
+        if: inputs.action == 'apply'
+        run: terraform apply -auto-approve -input=false tfplan
+
+      - name: Terraform Destroy
+        if: inputs.action == 'destroy'
+        run: |
+          terraform destroy -auto-approve -input=false \
+            -var="aws_region=$AWS_REGION" \
+            -var="bucket_name=$APP_BUCKET_NAME" \
+            -var="environment=${{ inputs.environment }}"
+
+      - name: Store app bucket info in SSM
+        if: inputs.action == 'apply'
+        run: |
+          set -euo pipefail
+
+          BUCKET_NAME=$(terraform output -raw bucket_name)
+          WEBSITE_ENDPOINT=$(terraform output -raw website_endpoint)
+          WEBSITE_DOMAIN=$(terraform output -raw website_domain)
+
+          aws ssm put-parameter \
+            --name "$APP_SSM_PREFIX/bucket_name" \
+            --type String \
+            --value "$BUCKET_NAME" \
+            --overwrite
+
+          aws ssm put-parameter \
+            --name "$APP_SSM_PREFIX/website_endpoint" \
+            --type String \
+            --value "$WEBSITE_ENDPOINT" \
+            --overwrite
+
+          aws ssm put-parameter \
+            --name "$APP_SSM_PREFIX/website_domain" \
+            --type String \
+            --value "$WEBSITE_DOMAIN" \
+            --overwrite
+
+      - name: Finalize
+        run: |
+          echo "Infrastructure deployment completed." >> $GITHUB_STEP_SUMMARY
+          echo "App bucket was created or updated." >> $GITHUB_STEP_SUMMARY
+          echo "SSM parameters for the app bucket were stored." >> $GITHUB_STEP_SUMMARY

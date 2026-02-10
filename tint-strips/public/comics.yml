@@ -1,17 +1,22 @@
 strips:
   - vignettes:
-      - vignette: 'tinwebp.svg'
-        bubbles: []
-      - vignette: 'tinweb1.svg'
+      - vignette: 'cover.svg'
+        bubbles:
+          - x: '33%'
+            y: '27%'
+            arrowPosition: 'none'
+            text: 'Restless Ghost - Chapter I'
+            fontSize: '48px'
+      - vignette: 'cap1-1.svg'
         bubbles: 
           - x: '48%'
             y: '10%'
             arrowPosition: 'bottom-left'
             text: 'How are you Tint?'
             fontSize: '32px'
-      - vignette: 'tinweb2.svg'
+      - vignette: 'cap1-2.svg'
         bubbles: []
-      - vignette: 'tinweb3.svg'
+      - vignette: 'cap1-3.svg'
         bubbles: 
           - x: '27%'
             y: '20%'
@@ -19,26 +24,118 @@ strips:
             text: "I see, EXPLOSIVE!"
             fontSize: '32px'
   - vignettes:
-      - vignette: 'tinwebp.svg'
-        bubbles: []
-      - vignette: 'tinweb2-1.svg'
+      - vignette: 'cover.svg'
+        bubbles:
+          - x: '31%'
+            y: '27%'
+            arrowPosition: 'none'
+            text: 'Restless Ghost - Chapter III'
+            fontSize: '48px'
+      - vignette: 'cap3-1.svg'
         bubbles: 
           - x: '28%'
             y: '3%'
             arrowPosition: 'right-bottom'
-            text: 'Look, Tint! The rats flee from the boat'
+            text: ''
             fontSize: '32px'
-      - vignette: 'tinweb2-2.svg'
+      - vignette: 'cap3-2.svg'
         bubbles:
           - x: '42%'
             y: '5%'
             arrowPosition: 'bottom-left'
-            text: 'Well, not all rats'
+            text: ''
             fontSize: '32px'
-      - vignette: 'tinweb2-3.svg'
+      - vignette: 'cap3-3.svg'
         bubbles: 
           - x: '40%'
             y: '5%'
             arrowPosition: 'bottom-left'
-            text: "When the ship sinks, only the damned remain"
+            text: ""
+            fontSize: '32px'
+  - vignettes:
+      - vignette: 'cover.svg'
+        bubbles:
+          - x: '31%'
+            y: '27%'
+            arrowPosition: 'none'
+            text: 'Restless Ghost - Chapter IV'
+            fontSize: '48px'
+      - vignette: 'cap4-1.svg'
+        bubbles: 
+          - x: '28%'
+            y: '3%'
+            arrowPosition: 'right-bottom'
+            text: ''
+            fontSize: '32px'
+      - vignette: 'cap4-2.svg'
+        bubbles:
+          - x: '42%'
+            y: '5%'
+            arrowPosition: 'bottom-left'
+            text: ''
+            fontSize: '32px'
+      - vignette: 'cap4-3.svg'
+        bubbles: 
+          - x: '40%'
+            y: '5%'
+            arrowPosition: 'bottom-left'
+            text: ""
+            fontSize: '32px'
+  - vignettes:
+      - vignette: 'cover.svg'
+        bubbles:
+          - x: '31%'
+            y: '27%'
+            arrowPosition: 'none'
+            text: 'Restless Ghost - Chapter V'
+            fontSize: '48px'
+      - vignette: 'cap5-1.svg'
+        bubbles: 
+          - x: '28%'
+            y: '3%'
+            arrowPosition: 'right-bottom'
+            text: ''
+            fontSize: '32px'
+      - vignette: 'cap5-2.svg'
+        bubbles:
+          - x: '42%'
+            y: '5%'
+            arrowPosition: 'bottom-left'
+            text: ''
+            fontSize: '32px'
+      - vignette: 'cap5-3.svg'
+        bubbles: 
+          - x: '40%'
+            y: '5%'
+            arrowPosition: 'bottom-left'
+            text: ""
+            fontSize: '32px'
+  - vignettes:
+      - vignette: 'cover.svg'
+        bubbles:
+          - x: '31%'
+            y: '27%'
+            arrowPosition: 'none'
+            text: 'Restless Ghost - Chapter VI'
+            fontSize: '48px'
+      - vignette: 'cap6-1.svg'
+        bubbles: 
+          - x: '28%'
+            y: '3%'
+            arrowPosition: 'right-bottom'
+            text: ''
+            fontSize: '32px'
+      - vignette: 'cap6-2.svg'
+        bubbles:
+          - x: '42%'
+            y: '5%'
+            arrowPosition: 'bottom-left'
+            text: ''
+            fontSize: '32px'
+      - vignette: 'cap6-3.svg'
+        bubbles: 
+          - x: '40%'
+            y: '5%'
+            arrowPosition: 'bottom-left'
+            text: ""
             fontSize: '32px'

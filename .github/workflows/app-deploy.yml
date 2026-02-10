@@ -1,0 +1,145 @@
+name: Deploy App to S3
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'GitHub Environment to use'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - prod
+      tag:
+        description: 'Git tag to deploy (default: latest vX.Y.Z)'
+        required: false
+        type: string
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve release tag
+        id: tag
+        run: |
+          set -euo pipefail
+
+          git fetch --tags --force
+
+          TAG_INPUT="${{ inputs.tag }}"
+          if [ -n "$TAG_INPUT" ]; then
+            TAG="$TAG_INPUT"
+          else
+            TAG=$(git tag -l 'v*' --sort=-v:refname | head -n1)
+          fi
+
+          if [ -z "$TAG" ]; then
+            echo "No release tag found. Provide an explicit tag to deploy."
+            exit 1
+          fi
+
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout release tag
+        run: |
+          set -euo pipefail
+          git checkout "${{ steps.tag.outputs.tag }}"
+
+      - name: Load prerequisites config
+        id: load-config
+        run: |
+          set -euo pipefail
+
+          CONFIG_FILE="infra/prerequsites.json"
+          ENVIRONMENT_INPUT="${{ inputs.environment }}"
+          if [ ! -f "$CONFIG_FILE" ]; then
+            echo "Missing config file: $CONFIG_FILE"
+            exit 1
+          fi
+
+          ENV_ROOT=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env] // empty' "$CONFIG_FILE")
+          if [ -z "$ENV_ROOT" ]; then
+            echo "Environment '$ENVIRONMENT_INPUT' not found in $CONFIG_FILE"
+            exit 1
+          fi
+
+          AWS_ACCOUNT_ID=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].aws_account_id' "$CONFIG_FILE")
+          AWS_REGION=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].aws_region' "$CONFIG_FILE")
+          GITHUB_REPO=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].github_repo' "$CONFIG_FILE")
+          IAM_ROLE_NAME=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].iam_role_name' "$CONFIG_FILE")
+          APP_BUCKET_NAME=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].app_bucket_name' "$CONFIG_FILE")
+
+          ROLE_ARN="arn:aws:iam::${AWS_ACCOUNT_ID}:role/${IAM_ROLE_NAME}"
+          APP_SSM_PREFIX="/${GITHUB_REPO}/${ENVIRONMENT_INPUT}/app"
+
+          echo "AWS_REGION=$AWS_REGION" >> "$GITHUB_ENV"
+          echo "APP_BUCKET_NAME=$APP_BUCKET_NAME" >> "$GITHUB_ENV"
+          echo "APP_SSM_PREFIX=$APP_SSM_PREFIX" >> "$GITHUB_ENV"
+
+          echo "aws_region=$AWS_REGION" >> "$GITHUB_OUTPUT"
+          echo "role_arn=$ROLE_ARN" >> "$GITHUB_OUTPUT"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ steps.load-config.outputs.role_arn }}
+          aws-region: ${{ steps.load-config.outputs.aws_region }}
+          role-session-name: GitHubActions-AppDeploy
+
+      - name: Resolve target bucket
+        run: |
+          set -euo pipefail
+
+          TARGET_BUCKET=""
+          if aws ssm get-parameter --name "$APP_SSM_PREFIX/bucket_name" --query 'Parameter.Value' --output text >/tmp/ssm_bucket 2>/dev/null; then
+            TARGET_BUCKET=$(cat /tmp/ssm_bucket)
+          fi
+
+          if [ -z "$TARGET_BUCKET" ]; then
+            TARGET_BUCKET="$APP_BUCKET_NAME"
+          fi
+
+          if [ -z "$TARGET_BUCKET" ]; then
+            echo "No target bucket resolved from SSM or JSON."
+            exit 1
+          fi
+
+          echo "TARGET_BUCKET=$TARGET_BUCKET" >> "$GITHUB_ENV"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tint-strips/package-lock.json
+
+      - name: Install dependencies
+        working-directory: tint-strips
+        run: npm ci
+
+      - name: Build app
+        working-directory: tint-strips
+        run: npm run build
+
+      - name: Deploy to S3
+        run: |
+          set -euo pipefail
+          aws s3 sync tint-strips/build "s3://$TARGET_BUCKET" --delete
+
+      - name: Finalize
+        run: |
+          echo "Deployment completed." >> $GITHUB_STEP_SUMMARY
+          echo "Release tag: ${{ steps.tag.outputs.tag }}" >> $GITHUB_STEP_SUMMARY

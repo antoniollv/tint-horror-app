@@ -1,350 +1,169 @@
-# moradores.es
+# tint-horror-app
 
-## Introducción
+[EN](README.md) | [ES](README_es.md)
 
-Vamos a construir desde cero un proyecto para leer cómics  mediante navegador. vamos a crear un servicio web para leer tiras de cómics, el servio tendrá las siguientes características:
+React web app to view comic strips in the browser. The app loads a YAML configuration file and renders the panels with their speech bubbles. This README is designed to help you run, deploy, and release the project smoothly.
 
-- Soporte multilenguaje, por defecto se mostraran las viñetas en el idioma que tenga defino el navegador por defecto, se habilitará una opción para poder cambiar al idioma deseado
-  - Los texto se cargaran en la viñeta desde un servio externo, estarán en español y se traducirán automáticamente al idioma mostrado, mediante una consulta a otro servicio externo.
-  - Se crearán los bocadillos de forma dinámica para envolver correctamente al los textos, el fondo del bocadillo será en blanco y recibirá dos parámetros, posición del bocadillo, que sera el centro del mismo y la posición final de la flecha que apunta al personaje que habla.
-  - la fuente del texto imitará en mayúsculas a una escritura a mano, ha de ser de uso libre y clara en su lectura
+## Structure
 
-- Usaremos tecnología de contenedores para envolver los distintos servicios, comunicándose entre ellos mediante llamadas a las distintas APIS o servicios
+- React app: [tint-strips/](tint-strips)
+- Release configuration: [.releaserc.json](.releaserc.json)
+- Publish workflow: [.github/workflows/publish.yml](.github/workflows/publish.yml)
+- Changelog: [CHANGELOG.md](CHANGELOG.md)
 
-Para empezar vamos a montar un Frontend al que pasaremos como parámetro un texto posición de bocadillo de texto y posición de la flecha. La tecnología a usar para representar el dibujo sera CSS o SVG svg y el lenguaje de Frontend el que consideres mas apropiado para la tarea teniendo en cuenta rapidez, sencillez y de amplio uso por la comunidad de desarrolladores de software. El dibujo base sera un cuadrado blanco de 2040px de lado, se adaptara a los distintos dispositivos de visualización.
+## Requirements
 
-Buenos días, para este proyecto, vamos a utilizar una arquitectura basada en contenedores para soportar la lectura de cómics en varios idiomas. Vamos a dividir el proyecto en varias partes para facilitar su desarrollo y mantenimiento. La tecnología de frontend que utilizaremos será React.js, ya que es ampliamente utilizada, tiene una gran comunidad de desarrolladores y permite una rápida creación de interfaces interactivas. Usaremos SVG para la representación de los dibujos y CSS para el estilo.
+- Node.js 22+
+- npm 9+
 
-Aquí están los pasos iniciales para montar el frontend:
+## Local development
 
-## Paso 1: Configuración del Proyecto
+From the app folder, the usual steps are:
 
-1. Crear la estructura del proyecto con Create React App
+| Step | Description | Command |
+| --- | --- | --- |
+| 1 | Install dependencies. | `npm install` |
+| 2 | Start development server. | `npm run dev` |
+| 3 | Build for production. | `npm run build` |
 
-   Ejecución en consola:
+### Available scripts (Vite)
 
-  ```Bash
-      npx create-react-app comic-reader
-      cd comic-reader
-  ```
+Defined in [tint-strips/package.json](tint-strips/package.json):
 
-```Output
-  Creating a new React app in /home/tonete/DevOps/moradores/comic-reader.
+| Script | Description | Command |
+| --- | --- | --- |
+| `dev` | Development server. | `npm run dev` |
+| `start` | Alias for `dev`. | `npm start` |
+| `build` | Production build. | `npm run build` |
+| `preview` | Local preview of the build. | `npm run preview` |
 
-  Installing packages. This might take a couple of minutes.
-  Installing react, react-dom, and react-scripts with cra-template...
+## Data configuration
 
-  added 1482 packages in 1m
+The app loads a YAML file from:
 
-  261 packages are looking for funding
-  
-  run `npm fund` for details
+- `VITE_YAML_CONFIG_PATH` if defined
+- `/comics.yml` if no variable is set
 
-  Installing template dependencies using npm...
+The file must be in `public/` and is copied to the build.
 
-  added 63 packages, and changed 1 package in 8s
+Images must live in `tint-strips/public/imgs/` so they resolve under `/imgs/`.
 
-  261 packages are looking for funding
-  
-  run `npm fund` for details
-  
-  Removing template package using npm...
+Compatible alternative variables:
 
-  removed 1 package, and audited 1545 packages in 3s
+- `REACT_APP_YAML_CONFIG_PATH`
+- `REACT_APP_IMAGE_PATH`
+- `REACT_APP_TRANSLATION_API_URL`
+- `REACT_APP_TRANSLATION_API_KEY`
 
-  261 packages are looking for funding
-  
-  run `npm fund` for details
+## S3 deployment (SPA)
 
-  8 vulnerabilities (2 moderate, 6 high)
+The app is an SPA without client-side routes, so S3 is enough.
 
-  To address all issues (including breaking changes), run:
-  
-  npm audit fix --force
+Quick checklist:
 
-  Run `npm audit` for details.
+- Build: `npm run build`
+- Upload **the contents** of `tint-strips/build/` to S3
+- Static website hosting:
+  - Index document: `index.html`
+  - Error document: `index.html` (future route compatibility)
 
-  Success! Created comic-reader at /home/tonete/DevOps/moradores/comic-reader
+In [tint-strips/package.json](tint-strips/package.json) we use `"homepage": "."` for relative paths.
 
-  Inside that directory, you can run several commands:
+### Bucket public policy (if not using CloudFront)
 
-  npm start
+If you deploy with the provided workflows, the bucket policy is applied automatically.
+Remember to enable public read-only access to the bucket. Example policy:
 
-  Starts the development server.
-
-  npm run build
-
-  Bundles the app into static files for production.
-
-  npm test
-
-  Starts the test runner.
-
-  npm run eject
-
-  Removes this tool and copies build dependencies, configuration files
-
-  and scripts into the app directory. If you do this, you can’t go back!
-
-  We suggest that you begin by typing:
-
-  cd comic-reader
-
-  npm start
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "PublicReadGetObject",
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::TU_BUCKET/*"
+    }
+  ]
+}
 ```
 
-2. Instalar dependencias necesarias:
+### Optional: CloudFront
 
-   - `react-i18next` para la internacionalización.
-   - `axios` para hacer llamadas a APIs externas.
-   - `styled-components` para manejar los estilos de manera más dinámica si se desea.
+If you want HTTPS, better caching, and a custom domain:
 
-   ```bash
-   npm install react-i18next i18next axios styled-components
-   ```
+- Create a distribution with the S3 bucket as origin
+- Set `index.html` as the Default Root Object
+- (If routes are added later) add a Custom Error Response 404 → `/index.html` (200)
+- Invalidate cache on new releases
 
-## Paso 2: Configuración de Internacionalización
+## Versioning and releases (semantic-release)
 
-1. Crear la configuración básica de `i18next`
+The automated flow is prepared to:
 
-   Crear un archivo `i18n.js` en la carpeta `src`:
+- Create a tag on `main` with format `vX.Y.Z`
+- Update `CHANGELOG.md`
+- Create a GitHub Release
+- Bump the version on `develop` (package.json + package-lock.json)
 
-   ```js
-   // src/i18n.js
-   import i18n from 'i18next';
-   import { initReactI18next } from 'react-i18next';
+### Configuration
 
-   i18n
-     .use(initReactI18next)
-     .init({
-       resources: {
-         en: {
-           translation: {
-             "Welcome to Comic Reader": "Welcome to Comic Reader",
-             // más traducciones...
-           }
-         },
-         es: {
-           translation: {
-             "Welcome to Comic Reader": "Bienvenido al Lector de Cómics",
-             // más traducciones...
-           }
-         },
-         // Agrega más idiomas según sea necesario
-       },
-       lng: navigator.language || 'es',
-       fallbackLng: 'es',
-       interpolation: {
-         escapeValue: false,
-       },
-     });
+- Main configuration: [.releaserc.json](.releaserc.json)
+- Workflow on `main`: [.github/workflows/publish.yml](.github/workflows/publish.yml)
 
-   export default i18n;
-   ```
+### Commit conventions (Conventional Commits)
 
-2. **Integrar `i18next` en la aplicación:**
-   En `src/index.js`:
-   ```js
-   import React from 'react';
-   import ReactDOM from 'react-dom';
-   import './index.css';
-   import App from './App';
-   import './i18n'; // Asegúrate de importar el archivo de configuración
+The commit type determines the release version:
 
-   ReactDOM.render(
-     <React.StrictMode>
-       <App />
-     </React.StrictMode>,
-     document.getElementById('root')
-   );
-   ```
+- `feat:` → **minor**
+- `fix:` → **patch**
+- `perf:` → **patch**
+- `refactor:` → **patch** (if behavior changes)
+- `docs:`, `chore:`, `test:`, `build:`, `ci:` → **no release**
 
-### Paso 3: Creación del Componente Principal
+For a **major** release, add `BREAKING CHANGE:` in the commit body.
 
-1. **Crear un componente para la visualización de las viñetas:**
+Valid examples:
 
-   Crear un archivo `ComicPanel.js` en la carpeta `src/components`:
-   ```js
-   // src/components/ComicPanel.js
-   import React from 'react';
-   import styled from 'styled-components';
+- `feat: add chapter selector`
+- `fix: correct comics.yml loading`
+- `refactor: simplify strip loading`
 
-   const Panel = styled.div`
-     width: 100%;
-     height: 100%;
-     background-color: white;
-     position: relative;
-   `;
+Note: for breaking changes, add `BREAKING CHANGE:` in the body.
 
-   const Bubble = styled.div`
-     position: absolute;
-     background-color: white;
-     border: 1px solid black;
-     border-radius: 10px;
-     padding: 10px;
-     max-width: 200px;
-     word-wrap: break-word;
-     font-family: 'Comic Sans MS', cursive, sans-serif;
-     text-transform: uppercase;
-   `;
+---
 
-   const Arrow = styled.div`
-     position: absolute;
-     width: 0;
-     height: 0;
-     border-left: 10px solid transparent;
-     border-right: 10px solid transparent;
-     border-top: 10px solid white;
-   `;
+## Current project status
 
-   const ComicPanel = ({ text, bubblePosition, arrowPosition }) => {
-     return (
-       <Panel>
-         <Bubble style={{ top: bubblePosition.y, left: bubblePosition.x }}>
-           {text}
-           <Arrow style={{ top: arrowPosition.y, left: arrowPosition.x }} />
-         </Bubble>
-       </Panel>
-     );
-   };
+Brief summary of the code status and items to review.
 
-   export default ComicPanel;
-   ```
+### What is working
 
-2. **Usar el componente en `App.js`:**
+- React app with panel navigation.
+- Dynamic speech bubbles and auto-translation.
+- YAML configuration loading.
+- Development and production Docker setup.
 
-   ```js
-   // src/App.js
-   import React from 'react';
-   import { useTranslation } from 'react-i18next';
-   import ComicPanel from './components/ComicPanel';
+### Pending or to review
 
-   const App = () => {
-     const { t } = useTranslation();
+- Assets (comics.yml and SVG images) must exist in public/.
+- Translation service must be externally available.
+- Tests are not defined yet.
 
-     const sampleText = t('Welcome to Comic Reader');
-     const bubblePosition = { x: '50%', y: '20%' };
-     const arrowPosition = { x: '55%', y: '30%' };
+### Key files
 
-     return (
-       <div style={{ width: '100vw', height: '100vh' }}>
-         <ComicPanel text={sampleText} bubblePosition={bubblePosition} arrowPosition={arrowPosition} />
-       </div>
-     );
-   };
+- Main app: [tint-strips/src/App.jsx](tint-strips/src/App.jsx)
+- Bubbles: [tint-strips/src/components/ComicPanel.jsx](tint-strips/src/components/ComicPanel.jsx)
+- YAML config: [tint-strips/src/components/loadConfigStrips.js](tint-strips/src/components/loadConfigStrips.js)
+- Translation: [tint-strips/src/utils/translate.js](tint-strips/src/utils/translate.js)
+- Docker: [tint-strips/Dockerfile.dev](tint-strips/Dockerfile.dev) and [tint-strips/Dockerfile.pro](tint-strips/Dockerfile.pro)
 
-   export default App;
-   ```
+---
 
-### Paso 4: Integración con API Externa
+## License
 
-En esta parte, crearemos una función para traducir el texto usando un servicio externo (por ejemplo, Google Translate API o cualquier otro servicio de traducción).
+This project is published as open source under:
 
-1. **Crear una función para traducir texto:**
-
-   Crear un archivo `translationService.js` en la carpeta `src/services`:
-
-   ```js
-   // src/services/translationService.js
-   import axios from 'axios';
-
-   export const translateText = async (text, targetLang) => {
-     const response = await axios.post('URL_DEL_SERVICIO_DE_TRADUCCION', {
-       q: text,
-       target: targetLang,
-     });
-     return response.data.translatedText;
-   };
-   ```
-
-2. **Usar la función en `App.js`:**
-
-   ```js
-   // src/App.js
-   import React, { useEffect, useState } from 'react';
-   import { useTranslation } from 'react-i18next';
-   import ComicPanel from './components/ComicPanel';
-   import { translateText } from './services/translationService';
-
-   const App = () => {
-     const { t, i18n } = useTranslation();
-     const [translatedText, setTranslatedText] = useState('');
-
-     useEffect(() => {
-       const fetchTranslation = async () => {
-         const text = t('Welcome to Comic Reader');
-         const translated = await translateText(text, i18n.language);
-         setTranslatedText(translated);
-       };
-       fetchTranslation();
-     }, [i18n.language, t]);
-
-     const bubblePosition = { x: '50%', y: '20%' };
-     const arrowPosition = { x: '55%', y: '30%' };
-
-     return (
-       <div style={{ width: '100vw', height: '100vh' }}>
-         <ComicPanel text={translatedText} bubblePosition={bubblePosition} arrowPosition={arrowPosition} />
-       </div>
-     );
-   };
-
-   export default App;
-   ```
-
-### Paso 5: Configuración de Contenedores
-
-Para la configuración de contenedores, usaremos Docker. Crearemos un archivo `Dockerfile` para el frontend.
-
-1. **Crear un archivo `Dockerfile` en la raíz del proyecto:**
-
-   ```dockerfile
-   # Use an official Node.js runtime as a parent image
-   FROM node:14-alpine
-
-   # Set the working directory
-   WORKDIR /app
-
-   # Copy package.json and package-lock.json
-   COPY package*.json ./
-
-   # Install dependencies
-   RUN npm install
-
-   # Copy the rest of the application code
-   COPY . .
-
-   # Build the React application
-   RUN npm run build
-
-   # Use an official nginx image to serve the built application
-   FROM nginx:alpine
-
-   # Copy the built application from the previous stage
-   COPY --from=0 /app/build /usr/share/nginx/html
-
-   # Expose port 80
-   EXPOSE 80
-
-   # Start nginx
-   CMD ["nginx", "-g", "daemon off;"]
-   ```
-
-2. **Crear un archivo `docker-compose.yml` para manejar múltiples servicios:**
-
-   ```yaml
-   version: '3'
-   services:
-     web:
-       build: .
-       ports:
-         - "80:80"
-   ```
-
-3. **Construir y ejecutar los contenedores:**
-
-   ```bash
-   docker-compose up --build
-   ```
-
-Esto es un punto de partida para el proyecto. A medida que se avanza, se pueden agregar más funcionalidades, manejar diferentes casos de uso y optimizar la aplicación.
+- Code: MIT. See [LICENSE](LICENSE).
+- Images: Creative Commons Attribution 4.0 (CC BY 4.0). See [LICENSE-IMAGES](LICENSE-IMAGES).

@@ -1,12 +1,12 @@
 # Usar una imagen oficial de Node.js como base
-FROM node:16 AS build
+FROM node:22-bullseye-slim AS build
 
 # Crear y establecer el directorio de trabajo
 WORKDIR /usr/src/app
 
 # Copiar los archivos necesarios para la compilación
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 COPY . .
 
 # Crear la build de producción
@@ -15,6 +15,7 @@ RUN npm run build
 # Usar una imagen más ligera para servir el contenido (Nginx)
 FROM nginx:alpine
 COPY --from=build /usr/src/app/build /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Exponer el puerto en producción
 EXPOSE 80
