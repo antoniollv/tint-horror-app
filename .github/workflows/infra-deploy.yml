@@ -58,7 +58,7 @@ jobs:
 
           AWS_ACCOUNT_ID=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].aws_account_id' "$CONFIG_FILE")
           AWS_REGION=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].aws_region' "$CONFIG_FILE")
-          TF_STATE_KEY=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].infra_tf_state_key' "$CONFIG_FILE")
+          TF_STATE_KEY=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].tf_state_key' "$CONFIG_FILE")
           GITHUB_REPO=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].github_repo' "$CONFIG_FILE")
           IAM_ROLE_NAME=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].iam_role_name' "$CONFIG_FILE")
           APP_BUCKET_NAME=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].app_bucket_name' "$CONFIG_FILE")
