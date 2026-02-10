@@ -64,6 +64,13 @@ jobs:
           git checkout develop
           git pull --ff-only origin develop
           pushd tint-strips > /dev/null
+          current_version=$(node -e "console.log(require('./package.json').version)")
+          if [ "$current_version" = "$VERSION" ]; then
+            echo "Package already at version $VERSION, skipping npm version."
+            popd > /dev/null
+            exit 0
+          fi
+
           npm version --no-git-tag-version "$VERSION"
           popd > /dev/null
 
