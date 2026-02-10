@@ -55,11 +55,15 @@
         "s3:ListBucket",
         "s3:PutEncryptionConfiguration",
         "s3:PutBucketOwnershipControls",
+        "s3:GetBucketOwnershipControls",
         "s3:PutBucketPolicy",
         "s3:PutBucketPublicAccessBlock",
         "s3:PutBucketVersioning",
         "s3:PutBucketWebsite",
-        "s3:PutBucketTagging"
+        "s3:PutBucketTagging",
+        "s3:PutBucketAcl",
+        "s3:GetBucketAcl",        
+        "s3:GetBucketPublicAccessBlock"
       ],
       "Resource": "arn:aws:s3:::${APP_BUCKET_NAME}"
     },
