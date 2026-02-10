@@ -52,7 +52,7 @@
         "s3:GetBucketPolicy",
         "s3:GetBucketWebsite",
         "s3:ListBucket",
-        "s3:PutBucketEncryption",
+        "s3:PutEncryptionConfiguration",
         "s3:PutBucketOwnershipControls",
         "s3:PutBucketPolicy",
         "s3:PutBucketPublicAccessBlock",
