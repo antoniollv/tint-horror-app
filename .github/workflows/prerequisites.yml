@@ -1,0 +1,274 @@
+name: Setup AWS Prerequisites
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'GitHub Environment to use'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - prod
+
+jobs:
+  setup-aws-infrastructure:
+    name: Setup AWS Infrastructure
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install envsubst
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y gettext-base
+
+      - name: Validate bootstrap secrets
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
+            echo "Missing bootstrap secrets in GitHub environment."
+            echo "Set AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY before running prerequisites."
+            exit 1
+          fi
+
+      - name: Load prerequisites config
+        id: load-config
+        run: |
+          set -euo pipefail
+
+          CONFIG_FILE="infra/prerequsites.json"
+          ENVIRONMENT_INPUT="${{ inputs.environment }}"
+          export ENVIRONMENT_INPUT
+          if [ ! -f "$CONFIG_FILE" ]; then
+            echo "Missing config file: $CONFIG_FILE"
+            exit 1
+          fi
+
+          ENV_ROOT=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env] // empty' "$CONFIG_FILE")
+          if [ -z "$ENV_ROOT" ]; then
+            echo "Environment '$ENVIRONMENT_INPUT' not found in $CONFIG_FILE"
+            exit 1
+          fi
+
+          AWS_REGION=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].aws_region' "$CONFIG_FILE")
+          TF_STATE_BUCKET=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].tf_state_bucket' "$CONFIG_FILE")
+          TF_STATE_KEY=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].tf_state_key' "$CONFIG_FILE")
+          GITHUB_ORG=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].github_org' "$CONFIG_FILE")
+          GITHUB_REPO=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].github_repo' "$CONFIG_FILE")
+          APP_BUCKET_NAME=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].app_bucket_name' "$CONFIG_FILE")
+          IAM_ROLE_NAME=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].iam_role_name' "$CONFIG_FILE")
+          IAM_POLICY_NAME=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].iam_policy_name' "$CONFIG_FILE")
+          export AWS_REGION TF_STATE_BUCKET TF_STATE_KEY GITHUB_ORG GITHUB_REPO APP_BUCKET_NAME IAM_ROLE_NAME IAM_POLICY_NAME
+          SSM_PREFIX="/${GITHUB_REPO}/${ENVIRONMENT_INPUT}/prerequisites"
+
+          echo "AWS_REGION=$AWS_REGION" >> "$GITHUB_ENV"
+          echo "TF_STATE_BUCKET=$TF_STATE_BUCKET" >> "$GITHUB_ENV"
+          echo "TF_STATE_KEY=$TF_STATE_KEY" >> "$GITHUB_ENV"
+          echo "GITHUB_ORG=$GITHUB_ORG" >> "$GITHUB_ENV"
+          echo "GITHUB_REPO=$GITHUB_REPO" >> "$GITHUB_ENV"
+          echo "APP_BUCKET_NAME=$APP_BUCKET_NAME" >> "$GITHUB_ENV"
+          echo "IAM_ROLE_NAME=$IAM_ROLE_NAME" >> "$GITHUB_ENV"
+          echo "IAM_POLICY_NAME=$IAM_POLICY_NAME" >> "$GITHUB_ENV"
+          echo "SSM_PREFIX=$SSM_PREFIX" >> "$GITHUB_ENV"
+
+          echo "aws_region=$AWS_REGION" >> "$GITHUB_OUTPUT"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ steps.load-config.outputs.aws_region }}
+
+      - name: Create S3 backend bucket
+        run: |
+          set -euo pipefail
+
+          echo "Creating S3 bucket for Terraform state backend..."
+          echo "Bucket: $TF_STATE_BUCKET"
+          echo "Region: $AWS_REGION"
+
+          if aws s3api head-bucket --bucket "$TF_STATE_BUCKET" 2>/dev/null; then
+            echo "Bucket already exists: $TF_STATE_BUCKET"
+          else
+            if [ "$AWS_REGION" = "us-east-1" ]; then
+              aws s3api create-bucket \
+                --bucket "$TF_STATE_BUCKET" \
+                --region "$AWS_REGION"
+            else
+              aws s3api create-bucket \
+                --bucket "$TF_STATE_BUCKET" \
+                --region "$AWS_REGION" \
+                --create-bucket-configuration LocationConstraint="$AWS_REGION"
+            fi
+            echo "Bucket created"
+          fi
+
+          echo "Enabling versioning..."
+          aws s3api put-bucket-versioning \
+            --bucket "$TF_STATE_BUCKET" \
+            --versioning-configuration Status=Enabled
+
+          echo "Blocking public access..."
+          aws s3api put-public-access-block \
+            --bucket "$TF_STATE_BUCKET" \
+            --public-access-block-configuration \
+              "BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true"
+
+          echo "Enabling encryption..."
+          aws s3api put-bucket-encryption \
+            --bucket "$TF_STATE_BUCKET" \
+            --server-side-encryption-configuration \
+              '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"},"BucketKeyEnabled":true}]}'
+
+      - name: Create GitHub OIDC role
+        id: iam
+        run: |
+          set -euo pipefail
+
+          echo "Creating IAM role for GitHub Actions OIDC..."
+          echo "Repo: $GITHUB_ORG/$GITHUB_REPO"
+          echo "Role: $IAM_ROLE_NAME"
+
+          OIDC_PROVIDER_ARN=$(aws iam list-open-id-connect-providers \
+            --query "OpenIDConnectProviderList[?contains(Arn, 'token.actions.githubusercontent.com')].Arn" \
+            --output text)
+
+          if [ -z "$OIDC_PROVIDER_ARN" ]; then
+            echo "Creating GitHub OIDC provider..."
+            OIDC_PROVIDER_ARN=$(aws iam create-open-id-connect-provider \
+              --url https://token.actions.githubusercontent.com \
+              --client-id-list sts.amazonaws.com \
+              --thumbprint-list 6938fd4d98bab03faadb97b34396831e3780aea1 \
+              --query 'OpenIDConnectProviderArn' \
+              --output text)
+            echo "OIDC provider created: $OIDC_PROVIDER_ARN"
+          else
+            echo "OIDC provider already exists: $OIDC_PROVIDER_ARN"
+          fi
+
+          export OIDC_PROVIDER_ARN
+
+          envsubst < infra/policies/trust-policy.json.tpl > /tmp/trust-policy.json
+
+          if aws iam get-role --role-name "$IAM_ROLE_NAME" >/dev/null 2>&1; then
+            echo "Role already exists, updating trust policy..."
+            aws iam update-assume-role-policy \
+              --role-name "$IAM_ROLE_NAME" \
+              --policy-document file:///tmp/trust-policy.json
+          else
+            echo "Creating role..."
+            aws iam create-role \
+              --role-name "$IAM_ROLE_NAME" \
+              --assume-role-policy-document file:///tmp/trust-policy.json \
+              --description "Role for GitHub Actions to manage infrastructure"
+          fi
+
+          rm -f /tmp/trust-policy.json
+
+          envsubst < infra/policies/iam-policy.json.tpl > /tmp/policy.json
+
+          POLICY_ARN=$(aws iam list-policies --scope Local \
+            --query "Policies[?PolicyName=='$IAM_POLICY_NAME'].Arn" \
+            --output text)
+
+          if [ -z "$POLICY_ARN" ]; then
+            echo "Creating policy..."
+            POLICY_ARN=$(aws iam create-policy \
+              --policy-name "$IAM_POLICY_NAME" \
+              --policy-document file:///tmp/policy.json \
+              --description "Policy for GitHub Actions to manage infrastructure" \
+              --query 'Policy.Arn' \
+              --output text)
+          else
+            echo "Updating policy..."
+            aws iam create-policy-version \
+              --policy-arn "$POLICY_ARN" \
+              --policy-document file:///tmp/policy.json \
+              --set-as-default
+
+            OLD_VERSIONS=$(aws iam list-policy-versions \
+              --policy-arn "$POLICY_ARN" \
+              --query 'Versions[?!IsDefaultVersion].VersionId' \
+              --output text)
+
+            for VERSION in $OLD_VERSIONS; do
+              aws iam delete-policy-version \
+                --policy-arn "$POLICY_ARN" \
+                --version-id "$VERSION"
+            done
+          fi
+
+          rm -f /tmp/policy.json
+
+          aws iam attach-role-policy \
+            --role-name "$IAM_ROLE_NAME" \
+            --policy-arn "$POLICY_ARN"
+
+          ROLE_ARN=$(aws iam get-role --role-name "$IAM_ROLE_NAME" --query 'Role.Arn' --output text)
+
+          echo "role_arn=$ROLE_ARN" >> "$GITHUB_OUTPUT"
+          echo "bucket=$TF_STATE_BUCKET" >> "$GITHUB_OUTPUT"
+
+          echo "::add-mask::$ROLE_ARN"
+
+      - name: Store prerequisites in SSM Parameter Store
+        run: |
+          set -euo pipefail
+
+          AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+
+          aws ssm put-parameter \
+            --name "$SSM_PREFIX/aws_region" \
+            --type String \
+            --value "$AWS_REGION" \
+            --overwrite
+
+          aws ssm put-parameter \
+            --name "$SSM_PREFIX/aws_account_id" \
+            --type String \
+            --value "$AWS_ACCOUNT_ID" \
+            --overwrite
+
+          aws ssm put-parameter \
+            --name "$SSM_PREFIX/tf_state_bucket" \
+            --type String \
+            --value "$TF_STATE_BUCKET" \
+            --overwrite
+
+          aws ssm put-parameter \
+            --name "$SSM_PREFIX/tf_state_key" \
+            --type String \
+            --value "$TF_STATE_KEY" \
+            --overwrite
+
+          aws ssm put-parameter \
+            --name "$SSM_PREFIX/aws_role_arn" \
+            --type String \
+            --value "${{ steps.iam.outputs.role_arn }}" \
+            --overwrite
+
+      - name: Finalize
+        run: |
+          echo "Prerequisites completed."
+          echo "S3 backend and OIDC role were created or verified."
+          echo "Configuration stored in SSM Parameter Store."
+
+          echo "### Prerequisites completed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "The S3 backend and OIDC role were created or verified." >> $GITHUB_STEP_SUMMARY
+          echo "Configuration was stored in SSM Parameter Store." >> $GITHUB_STEP_SUMMARY
+

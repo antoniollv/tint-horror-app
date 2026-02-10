@@ -1,8 +1,8 @@
 // src/components/ComicPanel.js
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import styled from 'styled-components';
 import { arrowPositionStyles } from '../styles/arrowStyles';
-import { translateText } from '../utils/translate';
+import { useTranslatedText } from '../hooks/useTranslatedText.js';
 
 const Bubble = styled.div`
   position: absolute;
@@ -32,17 +32,7 @@ const Bubble = styled.div`
 `;
 
 const ComicPanel = ({ bubble }) => {
-  const [translatedText, setTranslatedText] = useState(bubble.text);
-  
-  useEffect(() => {
-    const browserLanguage = navigator.language.split('-')[0] || navigator.languages[0].split('-')[0];
-    //const browserLanguage = 'en';
-    if (browserLanguage !== 'en') {
-      translateText(bubble.text, browserLanguage)
-        .then((translated) => setTranslatedText(translated))
-        .catch((err) => console.error('Translation error:', err));
-    }
-  }, [bubble.text]);
+  const translatedText = useTranslatedText(bubble.text);
 
   return (
     <Bubble style={{

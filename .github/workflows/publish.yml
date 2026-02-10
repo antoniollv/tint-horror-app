@@ -1,0 +1,112 @@
+name: Publish
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tint-strips/package-lock.json
+
+      - name: Install deps (React)
+        working-directory: tint-strips
+        run: npm ci
+
+      - name: Run semantic-release (tag in main)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        working-directory: tint-strips
+        run: npx semantic-release -e ../.releaserc.json
+
+      - name: Get latest version tag
+        id: get_version
+        run: |
+          set -e
+          latest_tag="$(git describe --tags --abbrev=0 2>/dev/null || true)"
+          if [[ -z "$latest_tag" ]]; then
+            echo "No tags found. Skipping develop bump."
+            echo "version=" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          version="${latest_tag#v}"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Bump version in develop (React)
+        if: ${{ steps.get_version.outputs.version != '' }}
+        env:
+          VERSION: ${{ steps.get_version.outputs.version }}
+        run: |
+          set -e
+          git fetch origin develop:develop || {
+            echo "Develop branch not found. Skipping bump.";
+            exit 0;
+          }
+          git checkout develop
+          git pull --ff-only origin develop
+          pushd tint-strips > /dev/null
+          npm version --no-git-tag-version "$VERSION"
+          popd > /dev/null
+
+          if git diff --quiet; then
+            echo "No version changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add tint-strips/package.json tint-strips/package-lock.json
+          git commit -m "chore(release): bump version to v$VERSION"
+          git push origin develop
+
+      # --- Plantillas para otros stacks (copiar/pegar en el paso de bump) ---
+      # Maven (pom.xml)
+      # - name: Bump version in develop (Maven)
+      #   if: ${{ steps.get_version.outputs.version != '' }}
+      #   env:
+      #     VERSION: ${{ steps.get_version.outputs.version }}
+      #   run: |
+      #     git fetch origin develop:develop
+      #     git checkout develop
+      #     git pull --ff-only origin develop
+      #     mvn -B versions:set -DnewVersion="$VERSION" -DgenerateBackupPoms=false
+      #     git config user.name "github-actions"
+      #     git config user.email "github-actions@github.com"
+      #     git add pom.xml
+      #     git commit -m "chore(release): bump version to v$VERSION"
+      #     git push origin develop
+
+      # Node (package.json en raiz)
+      # - name: Bump version in develop (Node)
+      #   if: ${{ steps.get_version.outputs.version != '' }}
+      #   env:
+      #     VERSION: ${{ steps.get_version.outputs.version }}
+      #   run: |
+      #     git fetch origin develop:develop
+      #     git checkout develop
+      #     git pull --ff-only origin develop
+      #     npm version --no-git-tag-version "$VERSION"
+      #     git config user.name "github-actions"
+      #     git config user.email "github-actions@github.com"
+      #     git add package.json package-lock.json
+      #     git commit -m "chore(release): bump version to v$VERSION"
+      #     git push origin develop
+

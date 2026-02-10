@@ -1,18 +1,24 @@
 import yaml from 'js-yaml';
+import { getEnvValue } from '../utils/env.js';
+import { fetchText } from '../utils/http.js';
+import { getValidationError, isValidStripsData } from '../utils/validation.js';
+import { logError } from '../utils/logger.js';
 
-let comicsConfigPath = process.env.REACT_APP_YAML_CONFIG_PATH;
-if (!comicsConfigPath || comicsConfigPath.trim() === "") {
-  comicsConfigPath = '/comics.yml';
-}
+const comicsConfigPath = getEnvValue(
+  ['VITE_YAML_CONFIG_PATH', 'REACT_APP_YAML_CONFIG_PATH'],
+  '/comics.yml'
+);
 
 export const loadConfigStrips = async () => {
   try {
-    const response = await fetch(comicsConfigPath);
-    const fileContents = await response.text();
+    const fileContents = await fetchText(comicsConfigPath);
     const data = yaml.load(fileContents);
+    if (!isValidStripsData(data)) {
+      throw new Error(getValidationError(data));
+    }
     return data;
   } catch (e) {
-    console.log(e);
+    throw logError('Error loading strips config', e);
   }
 };
 
