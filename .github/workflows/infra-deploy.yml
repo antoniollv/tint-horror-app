@@ -43,7 +43,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          CONFIG_FILE="infra/prerequsites.json"
+          CONFIG_FILE="$GITHUB_WORKSPACE/infra/prerequsites.json"
           ENVIRONMENT_INPUT="${{ inputs.environment }}"
           if [ ! -f "$CONFIG_FILE" ]; then
             echo "Missing config file: $CONFIG_FILE"
