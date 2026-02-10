@@ -123,11 +123,38 @@ Ejemplo de policy custom (alcance general, sin nombres de buckets):
 }
 ```
 
-## Workflows y responsabilidades
+## Workflows
+
+## Inputs de workflows
+
+Inputs:
+
+- `environment`: selecciona el GitHub Environment (`dev` o `prod`). Se usa para leer el bloque correcto de [infra/prerequsites.json](infra/prerequsites.json) y para cargar/guardar parámetros en SSM bajo el prefijo correspondiente.
+
+Inputs por workflow:
+
+- `prerequisites` / `environment`: crea el backend de Terraform y el rol OIDC para ese entorno.
+- `infra-deploy` / `environment`: despliega el bucket de hosting en ese entorno.
+- `infra-deploy` / `action`: `apply` crea/actualiza recursos, `destroy` los elimina.
+- `app-deploy` / `environment`: despliega al bucket del entorno.
+- `app-deploy` / `tag`: si se indica, despliega ese tag; si no, usa el último `v*`.
 
 ### 1. Pre-requisitos
 
 Workflow: [tint-horror-app/.github/workflows/prerequisites.yml](tint-horror-app/.github/workflows/prerequisites.yml)
+
+Requisitos del runner:
+
+- `envsubst` disponible en el runner (forma parte de `gettext-base`).
+  Añadir este estep en el caso de necesitarlo:
+  
+```yaml
+- name: Install envsubst
+  run: |
+    set -euo pipefail
+    sudo apt-get update
+    sudo apt-get install -y gettext-base
+```
 
 Qué hace:
 
