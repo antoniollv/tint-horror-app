@@ -1,75 +1,77 @@
 # tint-horror-app
 
-Aplicación web React para visualizar tiras de cómics desde el navegador. La app carga un fichero de configuración YAML y dibuja las viñetas con sus bocadillos de texto. Este README está pensado para que puedas arrancar, desplegar y versionar sin problemas.
+[EN](README.md) | [ES](README_es.md)
 
-## Estructura
+React web app to view comic strips in the browser. The app loads a YAML configuration file and renders the panels with their speech bubbles. This README is designed to help you run, deploy, and release the project smoothly.
 
-- App React: [tint-strips/](tint-strips)
-- Configuración de releases: [.releaserc.json](.releaserc.json)
-- Workflow de publicación: [.github/workflows/publish.yml](.github/workflows/publish.yml)
+## Structure
+
+- React app: [tint-strips/](tint-strips)
+- Release configuration: [.releaserc.json](.releaserc.json)
+- Publish workflow: [.github/workflows/publish.yml](.github/workflows/publish.yml)
 - Changelog: [CHANGELOG.md](CHANGELOG.md)
 
-## Requisitos
+## Requirements
 
 - Node.js 22+
 - npm 9+
 
-## Desarrollo local
+## Local development
 
-Desde la carpeta de la app, los pasos habituales son:
+From the app folder, the usual steps are:
 
-| Paso | Descripción | Comando |
+| Step | Description | Command |
 | --- | --- | --- |
-| 1 | Instalar dependencias. | `npm install` |
-| 2 | Arrancar en desarrollo. | `npm run dev` |
-| 3 | Compilar para producción. | `npm run build` |
+| 1 | Install dependencies. | `npm install` |
+| 2 | Start development server. | `npm run dev` |
+| 3 | Build for production. | `npm run build` |
 
-### Scripts disponibles (Vite)
+### Available scripts (Vite)
 
-En [tint-strips/package.json](tint-strips/package.json) están definidos estos scripts:
+Defined in [tint-strips/package.json](tint-strips/package.json):
 
-| Script | Descripción | Comando |
+| Script | Description | Command |
 | --- | --- | --- |
-| `dev` | Servidor de desarrollo. | `npm run dev` |
-| `start` | Alias de `dev`. | `npm start` |
-| `build` | Build de producción. | `npm run build` |
-| `preview` | Preview del build local. | `npm run preview` |
+| `dev` | Development server. | `npm run dev` |
+| `start` | Alias for `dev`. | `npm start` |
+| `build` | Production build. | `npm run build` |
+| `preview` | Local preview of the build. | `npm run preview` |
 
-## Configuración de datos
+## Data configuration
 
-La app carga un YAML con las tiras desde la ruta:
+The app loads a YAML file from:
 
-- `VITE_YAML_CONFIG_PATH` si está definida
-- `/comics.yml` si no hay variable
+- `VITE_YAML_CONFIG_PATH` if defined
+- `/comics.yml` if no variable is set
 
-El fichero debe estar en `public/` y se copiará al build.
+The file must be in `public/` and is copied to the build.
 
-Las imágenes deben estar en `tint-strips/public/imgs/` para que se resuelvan con la ruta `/imgs/`.
+Images must live in `tint-strips/public/imgs/` so they resolve under `/imgs/`.
 
-Variables alternativas compatibles:
+Compatible alternative variables:
 
 - `REACT_APP_YAML_CONFIG_PATH`
 - `REACT_APP_IMAGE_PATH`
 - `REACT_APP_TRANSLATION_API_URL`
 - `REACT_APP_TRANSLATION_API_KEY`
 
-## Despliegue en S3 (SPA)
+## S3 deployment (SPA)
 
-La app es una SPA sin rutas del lado cliente, por lo que S3 es suficiente.
+The app is an SPA without client-side routes, so S3 is enough.
 
-Checklist rápido:
+Quick checklist:
 
-- Compilar: `npm run build`
-- Subir **el contenido** de `tint-strips/build/` a S3
+- Build: `npm run build`
+- Upload **the contents** of `tint-strips/build/` to S3
 - Static website hosting:
   - Index document: `index.html`
-  - Error document: `index.html` (por compatibilidad futura con rutas)
+  - Error document: `index.html` (future route compatibility)
 
-En [tint-strips/package.json](tint-strips/package.json) se usa `"homepage": "."` para rutas relativas.
+In [tint-strips/package.json](tint-strips/package.json) we use `"homepage": "."` for relative paths.
 
-### Política pública del bucket (si no usas CloudFront)
+### Bucket public policy (if not using CloudFront)
 
-Recuerda habilitar acceso público (solo lectura) al bucket. Ejemplo de policy:
+Remember to enable public read-only access to the bucket. Example policy:
 
 ```json
 {
@@ -86,78 +88,81 @@ Recuerda habilitar acceso público (solo lectura) al bucket. Ejemplo de policy:
 }
 ```
 
-### Opcional: CloudFront
+### Optional: CloudFront
 
-Si quieres HTTPS, mejor caché y dominio propio:
+If you want HTTPS, better caching, and a custom domain:
 
-- Crea una distribución con origen en el bucket S3
-- Configura `index.html` como Default Root Object
-- (Si hay rutas en el futuro) usa un Custom Error Response 404 → `/index.html` (200)
-- Activa invalidaciones al publicar nuevas versiones
+- Create a distribution with the S3 bucket as origin
+- Set `index.html` as the Default Root Object
+- (If routes are added later) add a Custom Error Response 404 → `/index.html` (200)
+- Invalidate cache on new releases
 
-## Versionado y releases (semantic-release)
+## Versioning and releases (semantic-release)
 
-El flujo automático está preparado para:
+The automated flow is prepared to:
 
-- Generar tag en `main` con formato `vX.Y.Z`
-- Actualizar `CHANGELOG.md`
-- Crear GitHub Release
-- Hacer *bump* de versión en `develop` (package.json + package-lock.json)
+- Create a tag on `main` with format `vX.Y.Z`
+- Update `CHANGELOG.md`
+- Create a GitHub Release
+- Bump the version on `develop` (package.json + package-lock.json)
 
-### Configuración
+### Configuration
 
-- Configuración principal: [.releaserc.json](.releaserc.json)
-- Workflow en `main`: [.github/workflows/publish.yml](.github/workflows/publish.yml)
+- Main configuration: [.releaserc.json](.releaserc.json)
+- Workflow on `main`: [.github/workflows/publish.yml](.github/workflows/publish.yml)
 
-### Convenciones de commit (Conventional Commits)
+### Commit conventions (Conventional Commits)
 
-El tipo de commit determina la versión que se publica:
+The commit type determines the release version:
 
 - `feat:` → **minor**
 - `fix:` → **patch**
 - `perf:` → **patch**
-- `refactor:` → **patch** (si cambia comportamiento)
-- `docs:`, `chore:`, `test:`, `build:`, `ci:` → **sin release**
+- `refactor:` → **patch** (if behavior changes)
+- `docs:`, `chore:`, `test:`, `build:`, `ci:` → **no release**
 
-Para **major**, añade `BREAKING CHANGE:` en el body del commit.
+For a **major** release, add `BREAKING CHANGE:` in the commit body.
 
-Ejemplos válidos:
+Valid examples:
 
-- `feat: añadir selector de capítulos`
-- `fix: corregir carga de comics.yml`
-- `refactor: simplificar carga de tiras`
+- `feat: add chapter selector`
+- `fix: correct comics.yml loading`
+- `refactor: simplify strip loading`
 
-Nota: para un commit con cambio incompatible, escribe `BREAKING CHANGE:` en el cuerpo.
-
----
-
-## Estado actual del proyecto
-
-Resumen breve del estado del código y los puntos a revisar.
-
-### Lo que está funcionando
-
-- App React funcional con navegación de viñetas.
-- Bocadillos dinámicos y traducción automática.
-- Carga de configuración desde YAML.
-- Docker de desarrollo y producción.
-
-### Pendientes o a revisar
-
-- Assets (comics.yml e imágenes SVG) deben existir en public/.
-- Servicio de traducción debe estar disponible externamente.
-- Tests aún no definidos.
-
-### Archivos clave
-
-- App principal: [tint-strips/src/App.jsx](tint-strips/src/App.jsx)
-- Bocadillos: [tint-strips/src/components/ComicPanel.jsx](tint-strips/src/components/ComicPanel.jsx)
-- Config YAML: [tint-strips/src/components/loadConfigStrips.js](tint-strips/src/components/loadConfigStrips.js)
-- Traducción: [tint-strips/src/utils/translate.js](tint-strips/src/utils/translate.js)
-- Docker: [tint-strips/Dockerfile.dev](tint-strips/Dockerfile.dev) y [tint-strips/Dockerfile.pro](tint-strips/Dockerfile.pro)
+Note: for breaking changes, add `BREAKING CHANGE:` in the body.
 
 ---
 
-## Licencia
+## Current project status
 
-Pendiente de definir.
+Brief summary of the code status and items to review.
+
+### What is working
+
+- React app with panel navigation.
+- Dynamic speech bubbles and auto-translation.
+- YAML configuration loading.
+- Development and production Docker setup.
+
+### Pending or to review
+
+- Assets (comics.yml and SVG images) must exist in public/.
+- Translation service must be externally available.
+- Tests are not defined yet.
+
+### Key files
+
+- Main app: [tint-strips/src/App.jsx](tint-strips/src/App.jsx)
+- Bubbles: [tint-strips/src/components/ComicPanel.jsx](tint-strips/src/components/ComicPanel.jsx)
+- YAML config: [tint-strips/src/components/loadConfigStrips.js](tint-strips/src/components/loadConfigStrips.js)
+- Translation: [tint-strips/src/utils/translate.js](tint-strips/src/utils/translate.js)
+- Docker: [tint-strips/Dockerfile.dev](tint-strips/Dockerfile.dev) and [tint-strips/Dockerfile.pro](tint-strips/Dockerfile.pro)
+
+---
+
+## License
+
+This project is published as open source under:
+
+- Code: MIT. See [LICENSE](LICENSE).
+- Images: Creative Commons Attribution 4.0 (CC BY 4.0). See [LICENSE-IMAGES](LICENSE-IMAGES).

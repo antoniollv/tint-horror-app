@@ -51,8 +51,9 @@ Este documento detalla los pasos necesarios para desplegar la aplicación en Ama
    - **Desventajas:**
      - Costo más elevado debido al uso de más recursos (tarifas por desempeño, ancho de banda y solicitudes).
 
-### Factores a Considerar en los Costos:
-   - El precio de **S3** varía según la cantidad de almacenamiento y el número de solicitudes.
-   - El costo de **CloudFront** incluye tarifas por TB transferido, solicitudes realizadas desde los puntos de distribución, y posibles funciones adicionales como el WAF o invalidaciones de caché.
+### Factores a Considerar en los Costos
+
+- El precio de **S3** varía según la cantidad de almacenamiento y el número de solicitudes.
+- El costo de **CloudFront** incluye tarifas por TB transferido, solicitudes realizadas desde los puntos de distribución, y posibles funciones adicionales como el WAF o invalidaciones de caché.
 
 **Conclusión:** Si la aplicación tiene un tráfico alto o usuarios distribuidos globalmente, el uso de CloudFront es ideal para mejorar la experiencia del usuario. Para aplicaciones pequeñas o utilizadas regionalmente con menos visitas, S3 puede ser más rentable. Es posible combinar ambos, utilizando S3 como almacenamiento base y CloudFront como capa CDN para optimizar el tráfico.
