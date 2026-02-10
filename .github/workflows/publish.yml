@@ -35,7 +35,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         working-directory: tint-strips
-        run: npx semantic-release
+        run: npx semantic-release -e ../.releaserc.json
 
       - name: Get latest version tag
         id: get_version

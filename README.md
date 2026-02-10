@@ -71,6 +71,7 @@ In [tint-strips/package.json](tint-strips/package.json) we use `"homepage": "."`
 
 ### Bucket public policy (if not using CloudFront)
 
+If you deploy with the provided workflows, the bucket policy is applied automatically.
 Remember to enable public read-only access to the bucket. Example policy:
 
 ```json
