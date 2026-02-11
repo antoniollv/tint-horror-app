@@ -66,8 +66,6 @@ jobs:
           SSM_PREFIX="/${GITHUB_REPO}/${ENVIRONMENT_INPUT}/prerequisites"
           APP_SSM_PREFIX="/${GITHUB_REPO}/${ENVIRONMENT_INPUT}/app"
 
-          echo "AWS_REGION=$AWS_REGION" >> "$GITHUB_ENV"
-          echo "TF_STATE_KEY=$TF_STATE_KEY" >> "$GITHUB_ENV"
           echo "ROLE_ARN=$ROLE_ARN" >> "$GITHUB_ENV"
           echo "SSM_PREFIX=$SSM_PREFIX" >> "$GITHUB_ENV"
           echo "APP_SSM_PREFIX=$APP_SSM_PREFIX" >> "$GITHUB_ENV"
