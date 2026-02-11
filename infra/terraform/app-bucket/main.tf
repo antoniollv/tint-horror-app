@@ -22,6 +22,10 @@ resource "aws_s3_bucket" "app" {
   }
 }
 
+terraform {
+  backend "s3" {}
+}
+
 resource "aws_s3_bucket_ownership_controls" "app" {
   bucket = aws_s3_bucket.app.id
 
