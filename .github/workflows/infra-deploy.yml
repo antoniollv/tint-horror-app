@@ -58,7 +58,6 @@ jobs:
 
           AWS_ACCOUNT_ID=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].aws_account_id' "$CONFIG_FILE")
           AWS_REGION=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].aws_region' "$CONFIG_FILE")
-          TF_STATE_KEY=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].tf_state_key' "$CONFIG_FILE")
           GITHUB_REPO=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].github_repo' "$CONFIG_FILE")
           IAM_ROLE_NAME=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].iam_role_name' "$CONFIG_FILE")
           APP_BUCKET_NAME=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].app_bucket_name' "$CONFIG_FILE")
@@ -89,12 +88,25 @@ jobs:
         run: |
           set -euo pipefail
 
+          AWS_REGION=$(aws ssm get-parameter \
+            --name "$SSM_PREFIX/aws_region" \
+            --type String \
+            --query 'Parameter.Value' \
+            --output text)            
+          
           TF_STATE_BUCKET=$(aws ssm get-parameter \
             --name "$SSM_PREFIX/tf_state_bucket" \
             --query 'Parameter.Value' \
             --output text)
 
+          TF_STATE_KEY=$(aws ssm get-parameter \
+            --name "$SSM_PREFIX/tf_state_key" \
+            --query 'Parameter.Value' \
+            --output text)
+
+          echo "AWS_REGION=$AWS_REGION" >> "$GITHUB_ENV"
           echo "TF_STATE_BUCKET=$TF_STATE_BUCKET" >> "$GITHUB_ENV"
+          echo "TF_STATE_KEY=$TF_STATE_KEY" >> "$GITHUB_ENV"
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -107,10 +119,20 @@ jobs:
 
       - name: Terraform Init
         run: |
+          echo "Running terraform init..."
+          echo "AWS_REGION = ${{ env.AWS_REGION }}"
+          echo "BUCKET = ${{ env.TF_STATE_BUCKET }}"
+          echo "KEY = ${{ env.TF_STATE_KEY }}"
           terraform init \
-            -backend-config="bucket=$TF_STATE_BUCKET" \
-            -backend-config="key=$TF_STATE_KEY" \
-            -backend-config="region=$AWS_REGION"
+            -backend-config="bucket=${{ env.TF_STATE_BUCKET }}" \
+            -backend-config="key=${{ env.TF_STATE_KEY }}" \
+            -backend-config="region=${{ env.AWS_REGION }}"
+          echo "\nListing current remote state:"
+          terraform state list || echo "No resources in state or state file not found yet."
+        env:
+          AWS_REGION: ${{ env.AWS_REGION }}
+          TF_STATE_BUCKET: ${{ env.TF_STATE_BUCKET }}
+          TF_STATE_KEY: ${{ env.TF_STATE_KEY }}
 
       - name: Terraform Validate
         run: terraform validate -no-color
@@ -118,13 +140,16 @@ jobs:
       - name: Terraform Plan
         id: plan
         if: inputs.action == 'apply'
-        run: |
+        run: |          
           terraform plan -no-color -input=false \
-            -var="aws_region=$AWS_REGION" \
-            -var="bucket_name=$APP_BUCKET_NAME" \
+            -var="aws_region=${{ env.AWS_REGION }}" \
+            -var="bucket_name=${{ env.APP_BUCKET_NAME }}" \
             -var="environment=${{ inputs.environment }}" \
             -out=tfplan
         continue-on-error: true
+        env:
+          AWS_REGION: ${{ env.AWS_REGION }}
+          APP_BUCKET_NAME: ${{ env.APP_BUCKET_NAME }}
 
       - name: Terraform Plan Status
         if: steps.plan.outcome == 'failure'
@@ -138,9 +163,12 @@ jobs:
         if: inputs.action == 'destroy'
         run: |
           terraform destroy -auto-approve -input=false \
-            -var="aws_region=$AWS_REGION" \
-            -var="bucket_name=$APP_BUCKET_NAME" \
+            -var="aws_region=${{ env.AWS_REGION }}" \
+            -var="bucket_name=${{ env.APP_BUCKET_NAME }}" \
             -var="environment=${{ inputs.environment }}"
+        env:
+          AWS_REGION: ${{ env.AWS_REGION }}
+          APP_BUCKET_NAME: ${{ env.APP_BUCKET_NAME }}
 
       - name: Store app bucket info in SSM
         if: inputs.action == 'apply'

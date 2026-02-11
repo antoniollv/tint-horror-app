@@ -186,3 +186,5 @@ dist
 *.svg
 !tint-strips/public/imgs/cover.svg
 
+notas.md
+
