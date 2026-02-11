@@ -132,7 +132,7 @@ jobs:
 
       - name: Build app
         working-directory: tint-strips
-        run: npm run build
+        run: npm run build:${{ inputs.environment }}
 
       - name: Deploy to S3
         run: |
