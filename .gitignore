@@ -124,7 +124,6 @@ web_modules/
 .env.test
 .env.test.local
 
-
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
@@ -183,6 +182,7 @@ dist
 # SvelteKit build / generate output
 .svelte-kit
 
-
 ## Vectorial images
 *.svg
+!tint-strips/public/imgs/cover.svg
+
