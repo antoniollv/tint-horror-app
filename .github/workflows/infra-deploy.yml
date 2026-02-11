@@ -87,8 +87,7 @@ jobs:
           set -euo pipefail
 
           AWS_REGION=$(aws ssm get-parameter \
-            --name "$SSM_PREFIX/aws_region" \
-            --type String \
+            --name "$SSM_PREFIX/aws_region" \            
             --query 'Parameter.Value' \
             --output text)            
           
