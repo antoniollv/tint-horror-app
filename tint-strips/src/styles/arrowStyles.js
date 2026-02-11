@@ -3,7 +3,7 @@ import { css } from 'styled-components';
 
 export const arrowPositionStyles = {
   'none': css`
-    background-color: transparent;
+    background-color: white;
     border: none;
     padding: 0;
     filter: none;
@@ -80,9 +80,11 @@ export const arrowPositionStyles = {
   `,
   'left-bottom': css`
     &::before {
-      bottom: calc(var(--arrow) / 2 * -1);
-      left: calc(var(--arrow) * -1);
-      transform: skewX(-30deg) rotateZ(-30deg);
+      left: -20px;
+      bottom: 25px;
+      transform: rotateZ(90deg) scaleX(-1);
+      box-shadow: 
+        inset calc(var(--arrow)/3) calc(var(--arrow)/3) 0 0 white;
     }
-  `,
+  `
 };
