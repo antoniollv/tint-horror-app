@@ -35,17 +35,15 @@ const SvgLoader = ({ src, onLoad }) => {
 
     const svgElement = xmlDoc.querySelector('svg');
     if (svgElement) {
-      svgElement.setAttribute('width', '100%');
-      svgElement.setAttribute('height', '100%');
+      svgElement.setAttribute('width', '100vmin');
+      svgElement.setAttribute('height', '100vmin');
       svgElement.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-      svgElement.style.minWidth = '50vw';
-      svgElement.style.minHeight = '50vh';
-      svgElement.style.maxWidth = 'min(100vw, 100vh)';
-      svgElement.style.maxHeight = 'min(100vw, 100vh)';
-      svgElement.style.width = 'auto';
-      svgElement.style.height = 'auto';
+      svgElement.style.width = '100vmin';
+      svgElement.style.height = '100vmin';
       svgElement.style.display = 'block';
       svgElement.style.margin = 'auto';
+      svgElement.style.maxWidth = '100vw';
+      svgElement.style.maxHeight = '100vh';
     }
 
     return new XMLSerializer().serializeToString(xmlDoc);
