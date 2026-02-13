@@ -4,7 +4,7 @@ import ComicPanel from './components/ComicPanel.jsx';
 import BackgroundImage from './components/BackgroundImage.jsx';
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import ThumbnailList from './components/ThumbnailList.jsx';
-import ChapterSelector from './components/ChapterSelector.jsx';
+import AnimatedChapterSelector from './components/AnimatedChapterSelector.jsx';
 import StatusMessage from './components/StatusMessage.jsx';
 import BubbleLayer from './components/BubbleLayer.jsx';
 import { getEnvValue } from './utils/env.js';
@@ -116,17 +116,15 @@ function App() {
               });
             });
           }}
+          bubbles={loadedVignetteSrc === currentVignetteSrc ? currentStrip.bubbles : null}
         />
-      )}
-      {loadedVignetteSrc === currentVignetteSrc && (
-        <BubbleLayer bubbles={currentStrip.bubbles} svgRect={svgRect} />
       )}
       <ThumbnailList
         strips={thumbnailStrips}
         currentIndex={currentStripIndex}
         onSelect={goToSlide}
       />
-      <ChapterSelector
+      <AnimatedChapterSelector
         chapters={chapters}
         currentChapter={chapter}
         onSelect={selectChapter}
