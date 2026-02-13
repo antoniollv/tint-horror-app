@@ -116,10 +116,8 @@ function App() {
               });
             });
           }}
+          bubbles={loadedVignetteSrc === currentVignetteSrc ? currentStrip.bubbles : null}
         />
-      )}
-      {loadedVignetteSrc === currentVignetteSrc && (
-        <BubbleLayer bubbles={currentStrip.bubbles} svgRect={svgRect} />
       )}
       <ThumbnailList
         strips={thumbnailStrips}

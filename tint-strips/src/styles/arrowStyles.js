@@ -44,7 +44,7 @@ export const arrowPositionStyles = {
   `,
   'right-bottom': css`
     &::before {
-      bottom: 35px;
+      bottom: 20%;
       right: calc(var(--arrow) * -0.65);
       transform: skewY(-30deg) rotateZ(270deg) scaleX(-1);;
       box-shadow: 
@@ -80,8 +80,8 @@ export const arrowPositionStyles = {
   `,
   'left-bottom': css`
     &::before {
-      left: -20px;
-      bottom: 25px;
+      left: -6%;
+      bottom: 20%;
       transform: rotateZ(90deg) scaleX(-1);
       box-shadow: 
         inset calc(var(--arrow)/3) calc(var(--arrow)/3) 0 0 white;
