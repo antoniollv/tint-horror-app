@@ -2,7 +2,7 @@ import './App.css';
 import ComicPanel from './components/ComicPanel.jsx';
 //import SlideShow from './components/SlideShow';
 import BackgroundImage from './components/BackgroundImage.jsx';
-import React, { useState, useCallback, useEffect } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import ThumbnailList from './components/ThumbnailList.jsx';
 import ChapterSelector from './components/ChapterSelector.jsx';
 import StatusMessage from './components/StatusMessage.jsx';
@@ -16,7 +16,6 @@ import { useImagePreload } from './hooks/useImagePreload.js';
 import { useStripViewData } from './hooks/useStripViewData.js';
 
 function App() {
-
   const imgsPath = getEnvValue(
     ['VITE_IMAGE_PATH', 'REACT_APP_IMAGE_PATH'],
     '/imgs/'
@@ -26,6 +25,8 @@ function App() {
   const [currentStripIndex, setCurrentStripIndex] = useState(0);
   const [isTimerActive, setIsTimerActive] = useState(true);
   const [loadedVignetteSrc, setLoadedVignetteSrc] = useState('');
+  const [svgRect, setSvgRect] = useState(null);
+  const bgRef = useRef();
 
   const { strips, chapters, isLoading, error } = useStripsData(chapter);
 
@@ -100,19 +101,25 @@ function App() {
       />
       {isImageLoaded && (
         <BackgroundImage
+          ref={bgRef}
           key={currentVignetteSrc}
           src={currentVignetteSrc}
           onLoad={() => {
             requestAnimationFrame(() => {
               requestAnimationFrame(() => {
                 setLoadedVignetteSrc(currentVignetteSrc);
+                setTimeout(() => {
+                  if (bgRef.current && bgRef.current.getSvgRect) {
+                    setSvgRect(bgRef.current.getSvgRect());
+                  }
+                }, 100);
               });
             });
           }}
         />
       )}
       {loadedVignetteSrc === currentVignetteSrc && (
-        <BubbleLayer bubbles={currentStrip.bubbles} />
+        <BubbleLayer bubbles={currentStrip.bubbles} svgRect={svgRect} />
       )}
       <ThumbnailList
         strips={thumbnailStrips}
