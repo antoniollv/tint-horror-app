@@ -178,7 +178,7 @@ strips:
             fontSize: 'clamp(14px, 2vw, 64px)'
       - vignette: 'cap6-3.svg'
         bubbles: 
-          - x: '20%'
+          - x: '15%'
             y: '40%'
             arrowPosition: 'none'
             text: "Under construction!"
