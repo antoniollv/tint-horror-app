@@ -57,7 +57,8 @@
         "s3:PutBucketVersioning",
         "s3:PutBucketWebsite",
         "s3:PutBucketTagging",
-        "s3:PutBucketAcl"        
+        "s3:PutBucketAcl",
+        "s3:PutObject"
       ],
       "Resource": "arn:aws:s3:::${APP_BUCKET_NAME}"
     },
