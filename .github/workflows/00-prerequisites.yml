@@ -1,4 +1,4 @@
-name: Setup AWS Prerequisites
+name: 00. Setup AWS Prerequisites
 
 on:
   workflow_dispatch:
@@ -56,19 +56,21 @@ jobs:
             echo "Environment '$ENVIRONMENT_INPUT' not found in $CONFIG_FILE"
             exit 1
           fi
-
-          AWS_REGION=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].aws_region' "$CONFIG_FILE")
-          TF_STATE_BUCKET=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].tf_state_bucket' "$CONFIG_FILE")
-          TF_STATE_KEY=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].tf_state_key' "$CONFIG_FILE")
-          GITHUB_ORG=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].github_org' "$CONFIG_FILE")
-          GITHUB_REPO=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].github_repo' "$CONFIG_FILE")
-          APP_BUCKET_NAME=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].app_bucket_name' "$CONFIG_FILE")
+          
+          APP_BUCKET_NAME=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].app_bucket_name' "$CONFIG_FILE")          
           IAM_ROLE_NAME=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].iam_role_name' "$CONFIG_FILE")
           IAM_POLICY_NAME=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].iam_policy_name' "$CONFIG_FILE")
-          export AWS_REGION TF_STATE_BUCKET TF_STATE_KEY GITHUB_ORG GITHUB_REPO APP_BUCKET_NAME IAM_ROLE_NAME IAM_POLICY_NAME
-          SSM_PREFIX="/${GITHUB_REPO}/${ENVIRONMENT_INPUT}/prerequisites"
+          TF_STATE_BUCKET=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].tf_state_bucket' "$CONFIG_FILE")
+          TF_STATE_KEY=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].tf_state_key' "$CONFIG_FILE")
+          IMAGES_FOLDER=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].images_folder' "$CONFIG_FILE")
 
-          echo "AWS_REGION=$AWS_REGION" >> "$GITHUB_ENV"
+          GITHUB_ORG="${GITHUB_REPOSITORY%%/*}"
+          GITHUB_REPO="${GITHUB_REPOSITORY##*/}"
+          
+          export TF_STATE_BUCKET TF_STATE_KEY GITHUB_ORG GITHUB_REPO APP_BUCKET_NAME IAM_ROLE_NAME IAM_POLICY_NAME IMAGES_FOLDER
+          
+          SSM_PREFIX="/${GITHUB_REPO}/${ENVIRONMENT_INPUT}/prerequisites"
+          
           echo "ENVIRONMENT_INPUT=$ENVIRONMENT_INPUT" >> "$GITHUB_ENV"
           echo "TF_STATE_BUCKET=$TF_STATE_BUCKET" >> "$GITHUB_ENV"
           echo "TF_STATE_KEY=$TF_STATE_KEY" >> "$GITHUB_ENV"
@@ -78,15 +80,14 @@ jobs:
           echo "IAM_ROLE_NAME=$IAM_ROLE_NAME" >> "$GITHUB_ENV"
           echo "IAM_POLICY_NAME=$IAM_POLICY_NAME" >> "$GITHUB_ENV"
           echo "SSM_PREFIX=$SSM_PREFIX" >> "$GITHUB_ENV"
-
-          echo "aws_region=$AWS_REGION" >> "$GITHUB_OUTPUT"
+          echo "IMAGES_FOLDER=$IMAGES_FOLDER" >> "$GITHUB_ENV"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ steps.load-config.outputs.aws_region }}
+          aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Create S3 backend bucket
         run: |
@@ -94,20 +95,20 @@ jobs:
 
           echo "Creating S3 bucket for Terraform state backend..."
           echo "Bucket: $TF_STATE_BUCKET"
-          echo "Region: $AWS_REGION"
+          echo "Region: ${{ secrets.AWS_REGION }}"
 
           if aws s3api head-bucket --bucket "$TF_STATE_BUCKET" 2>/dev/null; then
             echo "Bucket already exists: $TF_STATE_BUCKET"
           else
-            if [ "$AWS_REGION" = "us-east-1" ]; then
+            if [ "${{ secrets.AWS_REGION }}" = "us-east-1" ]; then
               aws s3api create-bucket \
                 --bucket "$TF_STATE_BUCKET" \
-                --region "$AWS_REGION"
+                --region "${{ secrets.AWS_REGION }}"
             else
               aws s3api create-bucket \
                 --bucket "$TF_STATE_BUCKET" \
-                --region "$AWS_REGION" \
-                --create-bucket-configuration LocationConstraint="$AWS_REGION"
+                --region "${{ secrets.AWS_REGION }}" \
+                --create-bucket-configuration LocationConstraint="${{ secrets.AWS_REGION }}"
             fi
             echo "Bucket created"
           fi
@@ -128,6 +129,9 @@ jobs:
             --bucket "$TF_STATE_BUCKET" \
             --server-side-encryption-configuration \
               '{"Rules":[{"ApplyServerSideEncryptionByDefault":{"SSEAlgorithm":"AES256"},"BucketKeyEnabled":true}]}'
+
+          echo "Creating Image folder in bucket..."
+          aws s3api put-object --bucket "$TF_STATE_BUCKET" --key "${IMAGES_FOLDER}/"
 
       - name: Create GitHub OIDC role
         id: iam
@@ -214,35 +218,36 @@ jobs:
             --policy-arn "$POLICY_ARN"
 
           ROLE_ARN=$(aws iam get-role --role-name "$IAM_ROLE_NAME" --query 'Role.Arn' --output text)
-
           echo "role_arn=$ROLE_ARN" >> "$GITHUB_OUTPUT"
-          echo "bucket=$TF_STATE_BUCKET" >> "$GITHUB_OUTPUT"
-
           echo "::add-mask::$ROLE_ARN"
 
       - name: Store prerequisites in SSM Parameter Store
         run: |
-          set -euo pipefail
-
-          AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+          set -euo pipefail          
 
           aws ssm put-parameter \
-            --name "$SSM_PREFIX/aws_region" \
+            --name "$SSM_PREFIX/app_bucket_name" \
             --type String \
-            --value "$AWS_REGION" \
+            --value "$APP_BUCKET_NAME" \
             --overwrite
 
           aws ssm put-parameter \
-            --name "$SSM_PREFIX/aws_account_id" \
+            --name "$SSM_PREFIX/iam_role_name" \
             --type String \
-            --value "$AWS_ACCOUNT_ID" \
+            --value "$IAM_ROLE_NAME" \
+            --overwrite
+
+          aws ssm put-parameter \
+            --name "$SSM_PREFIX/iam_policy_name" \
+            --type String \
+            --value "$IAM_POLICY_NAME" \
             --overwrite
 
           aws ssm put-parameter \
             --name "$SSM_PREFIX/tf_state_bucket" \
             --type String \
             --value "$TF_STATE_BUCKET" \
-            --overwrite
+            --overwrite          
 
           aws ssm put-parameter \
             --name "$SSM_PREFIX/tf_state_key" \
@@ -251,6 +256,12 @@ jobs:
             --overwrite
 
           aws ssm put-parameter \
+            --name "$SSM_PREFIX/images_folder" \
+            --type String \
+            --value "$IMAGES_FOLDER" \
+            --overwrite
+
+            aws ssm put-parameter \
             --name "$SSM_PREFIX/aws_role_arn" \
             --type String \
             --value "${{ steps.iam.outputs.role_arn }}" \
