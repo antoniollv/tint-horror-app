@@ -45,7 +45,7 @@ jobs:
 
           GITHUB_ORG="${GITHUB_REPOSITORY%%/*}"
           GITHUB_REPO="${GITHUB_REPOSITORY##*/}"
-
+          ENVIRONMENT_INPUT="${{ inputs.environment }}"
           SSM_PREFIX="/${GITHUB_REPO}/${ENVIRONMENT_INPUT}/prerequisites"
           APP_SSM_PREFIX="/${GITHUB_REPO}/${ENVIRONMENT_INPUT}/app"
           
