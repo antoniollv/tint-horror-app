@@ -170,6 +170,8 @@ Los secretos requeridos en los entornos de GitHub son:
 
 - `TRANSLATION_API_KEY`: Si se usa API de traducción y está lo requiere
 - `AWS_REGION`: Region de AWS donde se desplegarán la infraestructura, aplicación y recursos. No es una información crítica pero mejor siempre limitar la información que se ofrece
+- `IAM_ROLE_NAME`: AWS role para OIDC
+- `AWS_ACCOUNT_ID`: AWS account ID
 
 Los secretos se definen en el entorno correspondiente (`dev` o `prod`) en GitHub > Settings > Environments.
 
@@ -179,9 +181,8 @@ Los secretos se definen en el entorno correspondiente (`dev` o `prod`) en GitHub
 - Configuración del entorno : [infra/prerequsites.json](infra/prerequsites.json)
   La configuración se guarda como parámetros en AWS Service Manager durante la ejecución del workflow de pre-requisitos
 
-  - app_bucket_name": Nombre de la bucket S3 para la aplicación  
-  - iam_role_name": AWS role para OIDC
-  - iam_policy_name": IAM policy que se asignara al rol
+  - app_bucket_name": Nombre de la bucket S3 para la aplicación
+  - iam_policy_name": IAM policy que se asignara al rol OIDC
   - tf_state_bucket": Bucket S3 para  permanencia del archivo tfstate de Terraform. Se aprovecha para depositar las imágenes de las viñetas
   - tf_state_key": Ruta y archivo tfstate de Terraform en el BUcket S3 de Terraform
   - images_folder": Ruta a las imágenes en el Bucket S3 de Terraform

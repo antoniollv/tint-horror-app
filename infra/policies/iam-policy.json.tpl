@@ -2,7 +2,7 @@
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Sid": "TerraformStateAccess",
+      "Sid": "TerraformStateAndImages",
       "Effect": "Allow",
       "Action": [
         "s3:GetObject",
@@ -16,61 +16,57 @@
       ]
     },
     {
-      "Sid": "SSMPrerequisitesRead",
+      "Sid": "IAMSelfManagement",
       "Effect": "Allow",
       "Action": [
-        "ssm:GetParameter",
-        "ssm:GetParameters",
-        "ssm:GetParametersByPath"
+        "iam:GetRole",
+        "iam:UpdateAssumeRolePolicy",
+        "iam:GetPolicy",
+        "iam:CreatePolicyVersion",
+        "iam:DeletePolicyVersion",
+        "iam:ListPolicyVersions",
+        "iam:AttachRolePolicy"
       ],
-      "Resource": "arn:aws:ssm:${AWS_REGION}:*:parameter/${GITHUB_REPO}/${ENVIRONMENT_INPUT}/prerequisites/*"
+      "Resource": [
+        "arn:aws:iam::*:role/${IAM_ROLE_NAME}",
+        "arn:aws:iam::*:policy/${IAM_POLICY_NAME}"
+      ]
     },
     {
-      "Sid": "SSMAppBucketWrite",
+      "Sid": "SSMManagement",
       "Effect": "Allow",
       "Action": [
         "ssm:PutParameter",
         "ssm:GetParameter",
-        "ssm:GetParameters"
+        "ssm:GetParameters",
+        "ssm:GetParametersByPath"
       ],
-      "Resource": "arn:aws:ssm:${AWS_REGION}:*:parameter/${GITHUB_REPO}/${ENVIRONMENT_INPUT}/app/*"
+      "Resource": "arn:aws:ssm:*:*:parameter/${GITHUB_REPO}/${ENVIRONMENT_INPUT}/*"
     },
     {
-      "Sid": "AppBucketCreate",
+      "Sid": "AppBucketFullManagement",
       "Effect": "Allow",
       "Action": [
-        "s3:CreateBucket"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Sid": "AppBucketManage",
-      "Effect": "Allow",
-      "Action": [
+        "s3:CreateBucket",
         "s3:DeleteBucket",
-        "s3:Get*",        
+        "s3:Get*",
         "s3:ListBucket",
         "s3:PutEncryptionConfiguration",
-        "s3:PutBucketOwnershipControls",        
+        "s3:PutBucketOwnershipControls",
         "s3:PutBucketPolicy",
         "s3:PutBucketPublicAccessBlock",
         "s3:PutBucketVersioning",
         "s3:PutBucketWebsite",
         "s3:PutBucketTagging",
         "s3:PutBucketAcl",
-        "s3:PutObject"
-      ],
-      "Resource": "arn:aws:s3:::${APP_BUCKET_NAME}"
-    },
-    {
-      "Sid": "AppBucketObjects",
-      "Effect": "Allow",
-      "Action": [
-        "s3:DeleteObject",
+        "s3:PutObject",
         "s3:GetObject",
-        "s3:PutObject"
+        "s3:DeleteObject"
       ],
-      "Resource": "arn:aws:s3:::${APP_BUCKET_NAME}/*"
+      "Resource": [
+        "arn:aws:s3:::${APP_BUCKET_NAME}",
+        "arn:aws:s3:::${APP_BUCKET_NAME}/*"
+      ]
     }
   ]
 }

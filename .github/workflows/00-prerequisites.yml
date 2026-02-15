@@ -58,7 +58,7 @@ jobs:
           fi
           
           APP_BUCKET_NAME=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].app_bucket_name' "$CONFIG_FILE")          
-          IAM_ROLE_NAME=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].iam_role_name' "$CONFIG_FILE")
+          IAM_ROLE_NAME="${{ secrets.IAM_ROLE_NAME }}"
           IAM_POLICY_NAME=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].iam_policy_name' "$CONFIG_FILE")
           TF_STATE_BUCKET=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].tf_state_bucket' "$CONFIG_FILE")
           TF_STATE_KEY=$(jq -r --arg env "$ENVIRONMENT_INPUT" '.environments[$env].tf_state_key' "$CONFIG_FILE")
@@ -229,12 +229,6 @@ jobs:
             --name "$SSM_PREFIX/app_bucket_name" \
             --type String \
             --value "$APP_BUCKET_NAME" \
-            --overwrite
-
-          aws ssm put-parameter \
-            --name "$SSM_PREFIX/iam_role_name" \
-            --type String \
-            --value "$IAM_ROLE_NAME" \
             --overwrite
 
           aws ssm put-parameter \

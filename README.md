@@ -170,6 +170,8 @@ Required secrets for GitHub environments:
 
 - `TRANSLATION_API_KEY`: If using a translation API and required
 - `AWS_REGION`: AWS region for infrastructure, app, and resources. Not critical, but limit exposed information.
+- `IAM_ROLE_NAME`: AWS role for OIDC
+- `AWS_ACCOUNT_ID`: AWS account ID
 
 Secrets are defined in the corresponding environment (`dev` or `prod`) in GitHub > Settings > Environments.
 
@@ -180,8 +182,7 @@ Secrets are defined in the corresponding environment (`dev` or `prod`) in GitHub
   Configuration is stored as parameters in AWS Service Manager during the prerequisites workflow
 
   - app_bucket_name: S3 bucket name for the app  
-  - iam_role_name: AWS role for OIDC
-  - iam_policy_name: IAM policy assigned to the role
+  - iam_policy_name: IAM policy assigned to the OIDC role
   - tf_state_bucket: S3 bucket for Terraform state file (also used for comic images)
   - tf_state_key: Path and file for Terraform state in the S3 bucket
   - images_folder: Path to images in the Terraform S3 bucket

@@ -4,11 +4,11 @@ import { fetchJson } from './http.js';
 import { logError, logInfo } from './logger.js';
 
 const endpoint = getEnvValue(
-  ['VITE_TRANSLATION_API_URL', 'REACT_APP_TRANSLATION_API_URL'],
+  ['VITE_TRANSLATION_API_URL'],
   'http://localhost:5000/translate'
 );
 const traslation_api_key = getEnvValue(
-  ['VITE_TRANSLATION_API_KEY', 'REACT_APP_TRANSLATION_API_KEY'],
+  ['VITE_TRANSLATION_API_KEY'],
   ''
 );
 

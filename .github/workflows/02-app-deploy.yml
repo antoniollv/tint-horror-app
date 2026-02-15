@@ -58,6 +58,22 @@ jobs:
           set -euo pipefail
           git checkout "${{ steps.tag.outputs.tag }}"
 
+      - name: Config ROLE ARN
+        id: config-role-arn
+        run: |
+          AWS_ACCOUNT_ID="${{ secrets.AWS_ACCOUNT_ID }}"
+          IAM_ROLE_NAME="${{ secrets.IAM_ROLE_NAME }}"
+          ROLE_ARN="arn:aws:iam::${AWS_ACCOUNT_ID}:role/${IAM_ROLE_NAME}"
+          echo "ROLE_ARN=$ROLE_ARN" >> "$GITHUB_ENV"
+          echo "role_arn=$ROLE_ARN" >> "$GITHUB_OUTPUT"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ steps.config-role-arn.outputs.role_arn }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-session-name: GitHubActions-AppDeploy
+
       - name: Load config from SSM
         id: load-config
         run: |
@@ -71,11 +87,6 @@ jobs:
           
           APP_BUCKET_NAME=$(aws ssm get-parameter \
             --name "$SSM_PREFIX/app_bucket_name" \
-            --query 'Parameter.Value' \
-            --output text)
-
-          IAM_ROLE_NAME=$(aws ssm get-parameter \
-            --name "$SSM_PREFIX/iam_role_name" \
             --query 'Parameter.Value' \
             --output text)
 
@@ -98,31 +109,16 @@ jobs:
             --name "$SSM_PREFIX/images_folder" \
             --query 'Parameter.Value' \
             --output text)          
-          
-          AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          ROLE_ARN="arn:aws:iam::${AWS_ACCOUNT_ID}:role/${IAM_ROLE_NAME}"
 
           echo "APP_BUCKET_NAME=$APP_BUCKET_NAME" >> "$GITHUB_ENV"
           echo "GITHUB_ORG=$GITHUB_ORG" >> "$GITHUB_ENV"
           echo "GITHUB_REPO=$GITHUB_REPO" >> "$GITHUB_ENV"
-          echo "IAM_ROLE_NAME=$IAM_ROLE_NAME" >> "$GITHUB_ENV"
           echo "IAM_POLICY_NAME=$IAM_POLICY_NAME" >> "$GITHUB_ENV"
           echo "TF_STATE_BUCKET=$TF_STATE_BUCKET" >> "$GITHUB_ENV"
           echo "TF_STATE_KEY=$TF_STATE_KEY" >> "$GITHUB_ENV"
           echo "IMAGES_FOLDER=$IMAGES_FOLDER" >> "$GITHUB_ENV"
-          echo "ROLE_ARN=$ROLE_ARN" >> "$GITHUB_ENV"
           echo "SSM_PREFIX=$SSM_PREFIX" >> "$GITHUB_ENV"
           echo "APP_SSM_PREFIX=$APP_SSM_PREFIX" >> "$GITHUB_ENV"          
-          
-          echo "role_arn=$ROLE_ARN" >> "$GITHUB_OUTPUT"
-          echo "::add-mask::$ROLE_ARN"          
-
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ steps.load-config.outputs.role_arn }}
-          aws-region: ${{ secrets.AWS_REGION }}
-          role-session-name: GitHubActions-AppDeploy
 
       - name: Resolve target bucket
         run: |

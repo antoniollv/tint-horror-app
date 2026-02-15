@@ -5,7 +5,7 @@ import { getValidationError, isValidStripsData } from '../utils/validation.js';
 import { logError } from '../utils/logger.js';
 
 const comicsConfigPath = getEnvValue(
-  ['VITE_YAML_CONFIG_PATH', 'REACT_APP_YAML_CONFIG_PATH'],
+  ['VITE_YAML_CONFIG_PATH'],
   '/comics.yml'
 );
 

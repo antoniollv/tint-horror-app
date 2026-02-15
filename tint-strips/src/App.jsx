@@ -17,7 +17,7 @@ import { useStripViewData } from './hooks/useStripViewData.js';
 
 function App() {
   const imgsPath = getEnvValue(
-    ['VITE_IMAGE_PATH', 'REACT_APP_IMAGE_PATH'],
+    ['VITE_IMAGE_PATH'],
     '/imgs/'
   );
 
@@ -92,7 +92,7 @@ function App() {
 
   return (
     <div className="App">
-      <style>@import url('https://fonts.cdnfonts.com/css/anime-ace');</style>
+
       <img
         src={currentVignetteSrc}
         onLoad={handleImageLoad}
