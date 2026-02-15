@@ -1,0 +1,45 @@
+name: Test Build
+
+on:
+  pull_request:
+    branches:
+      - develop
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'GitHub Environment to use'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - prod
+jobs:
+  deploy:
+    name: Test Build on ${{ github.ref }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment == '' && 'dev' || inputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: tint-strips/package-lock.json
+
+      - name: Install dependencies
+        working-directory: tint-strips
+        run: npm ci
+
+      - name: Build app
+        working-directory: tint-strips
+        run: npm run build:${{ inputs.environment == '' && 'dev' || inputs.environment }}
+
+      - name: Finalize
+        run: |
+          echo "Build completed on ${{ github.ref }}." >> $GITHUB_STEP_SUMMARY
+

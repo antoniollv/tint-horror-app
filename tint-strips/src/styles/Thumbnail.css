@@ -1,0 +1,120 @@
+.chapter-selector {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 120px;
+  min-height: 40px;
+  background: rgba(99,99,99,0.85);
+  border-radius: 8px;
+  box-shadow: 5px 0 5px rgba(0,0,0,0.2);
+  z-index: 1100;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  transition: width 0.3s, min-height 0.3s;
+}
+
+.chapter-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  font-weight: bold;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+}
+
+.chapter-list {
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+}
+
+.chapter {
+  padding: 8px 0;
+  text-align: center;
+  color: #fff;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,0.15);
+  transition: background 0.2s;
+}
+.chapter:last-child {
+  border-bottom: none;
+}
+.chapter.active {
+  background: rgba(220,235,255,0.25);
+  color: #1976d2;
+}
+
+.chapter-selector:not(.open) {
+  min-height: 40px;
+  width: 120px;
+  overflow: hidden;
+}
+.chapter-selector.open {
+  min-height: 120px;
+  width: 150px;
+}
+
+
+.thumbnails-container {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100vw;
+  max-width: 100vw;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.2);
+  padding: 10px 0;
+  z-index: 1000;
+  box-sizing: border-box;
+}
+
+.thumbnail {
+  display: inline-block;
+  margin: 0 5px;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.thumbnail img {
+  width: clamp(48px, 8vw, 100px);
+  height: auto;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.thumbnail.active {
+  border-color: blue;
+}
+
+.chapter-selector {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 150px;
+  display: flex;
+  flex-direction: column;
+  background-color: rgba(99, 99, 99, 0.5);
+  padding: 10px;
+  box-shadow: 5px 0 5px rgba(0, 0, 0, 0.2);
+}
+
+.chapter {
+  margin-bottom: 10px;
+  cursor: pointer;
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  text-align: center;
+  transition: background-color 0.3s, border-color 0.3s;
+}
+
+.chapter.active {
+  background-color: lightblue;
+  border-color: blue;
+}

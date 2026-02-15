@@ -1,0 +1,20 @@
+{
+  "environments": {
+    "dev": {
+      "app_bucket_name": "tint-horror-app-web-dev",
+      "iam_role_name": "GitHubActionsRole-tint-horror-app",
+      "iam_policy_name": "GitHubActionsPolicy-tint-horror-app",
+      "tf_state_bucket": "tint-horror-app-terraform-state",
+      "tf_state_key": "tint-horror-app/dev/terraform.tfstate",
+      "images_folder": "tint-horror-app/dev/images"
+    },
+    "prod": {
+      "app_bucket_name": "tint-horror-app-web-prod",      
+      "iam_role_name": "GitHubActionsRole-tint-horror-app-prod",
+      "iam_policy_name": "GitHubActionsPolicy-tint-horror-app-prod",
+      "tf_state_bucket": "tint-horror-app-terraform-state",
+      "tf_state_key": "tint-horror-app/prod/terraform.tfstate",
+      "images_folder": "tint-horror-app/prod/images"
+    }
+  }
+}

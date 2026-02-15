@@ -1,0 +1,193 @@
+name: 01. Deploy Infrastructure - Bucket & SSM Parameters
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'GitHub Environment to use'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - prod
+      action:
+        description: 'Terraform action to perform'
+        required: true
+        default: 'apply'
+        type: choice
+        options:
+          - apply
+          - destroy
+
+jobs:
+  terraform:
+    name: Terraform ${{ inputs.action }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    permissions:
+      id-token: write
+      contents: read
+
+    defaults:
+      run:
+        working-directory: infra/terraform/app-bucket
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Config ROLE ARN
+        id: config-role-arn
+        run: |
+          AWS_ACCOUNT_ID="${{ secrets.AWS_ACCOUNT_ID }}"
+          IAM_ROLE_NAME="${{ secrets.IAM_ROLE_NAME }}"
+          ROLE_ARN="arn:aws:iam::${AWS_ACCOUNT_ID}:role/${IAM_ROLE_NAME}"
+          echo "ROLE_ARN=$ROLE_ARN" >> "$GITHUB_ENV"
+          echo "role_arn=$ROLE_ARN" >> "$GITHUB_OUTPUT"
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ steps.config-role-arn.outputs.role_arn }}
+          aws-region: ${{ secrets.AWS_REGION }}
+          role-session-name: GitHubActions-AppBucket   
+
+      - name: Load config from SSM
+        id: load-config        
+        run: |
+          set -euo pipefail
+
+          GITHUB_ORG="${GITHUB_REPOSITORY%%/*}"
+          GITHUB_REPO="${GITHUB_REPOSITORY##*/}"
+          ENVIRONMENT_INPUT="${{ inputs.environment }}"
+          SSM_PREFIX="/${GITHUB_REPO}/${ENVIRONMENT_INPUT}/prerequisites"
+          APP_SSM_PREFIX="/${GITHUB_REPO}/${ENVIRONMENT_INPUT}/app"
+          
+          APP_BUCKET_NAME=$(aws ssm get-parameter \
+            --name "$SSM_PREFIX/app_bucket_name" \
+            --query 'Parameter.Value' \
+            --output text)
+
+          IAM_POLICY_NAME=$(aws ssm get-parameter \
+            --name "$SSM_PREFIX/iam_policy_name" \
+            --query 'Parameter.Value' \
+            --output text)
+
+          TF_STATE_BUCKET=$(aws ssm get-parameter \
+            --name "$SSM_PREFIX/tf_state_bucket" \
+            --query 'Parameter.Value' \
+            --output text)
+
+          TF_STATE_KEY=$(aws ssm get-parameter \
+            --name "$SSM_PREFIX/tf_state_key" \
+            --query 'Parameter.Value' \
+            --output text)
+
+          IMAGES_FOLDER=$(aws ssm get-parameter \
+            --name "$SSM_PREFIX/images_folder" \
+            --query 'Parameter.Value' \
+            --output text)
+
+          echo "APP_BUCKET_NAME=$APP_BUCKET_NAME" >> "$GITHUB_ENV"
+          echo "GITHUB_ORG=$GITHUB_ORG" >> "$GITHUB_ENV"
+          echo "GITHUB_REPO=$GITHUB_REPO" >> "$GITHUB_ENV"
+          echo "IAM_POLICY_NAME=$IAM_POLICY_NAME" >> "$GITHUB_ENV"
+          echo "TF_STATE_BUCKET=$TF_STATE_BUCKET" >> "$GITHUB_ENV"
+          echo "TF_STATE_KEY=$TF_STATE_KEY" >> "$GITHUB_ENV"
+          echo "IMAGES_FOLDER=$IMAGES_FOLDER" >> "$GITHUB_ENV"
+          echo "SSM_PREFIX=$SSM_PREFIX" >> "$GITHUB_ENV"
+          echo "APP_SSM_PREFIX=$APP_SSM_PREFIX" >> "$GITHUB_ENV"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+
+      - name: Terraform Format Check
+        run: terraform fmt -check
+        continue-on-error: true
+
+      - name: Terraform Init
+        run: |
+          echo "Running terraform init..."
+          echo "AWS_REGION = ${{ secrets.AWS_REGION }}"
+          echo "BUCKET = ${{ env.TF_STATE_BUCKET }}"
+          echo "KEY = ${{ env.TF_STATE_KEY }}"
+          terraform init \
+            -backend-config="bucket=${{ env.TF_STATE_BUCKET }}" \
+            -backend-config="key=${{ env.TF_STATE_KEY }}" \
+            -backend-config="region=${{ secrets.AWS_REGION }}"
+          echo "\nListing current remote state:"
+          terraform state list || echo "No resources in state or state file not found yet."
+        env:          
+          TF_STATE_BUCKET: ${{ env.TF_STATE_BUCKET }}
+          TF_STATE_KEY: ${{ env.TF_STATE_KEY }}
+
+      - name: Terraform Validate
+        run: terraform validate -no-color
+
+      - name: Terraform Plan
+        id: plan
+        if: inputs.action == 'apply'
+        run: |          
+          terraform plan -no-color -input=false \
+            -var="aws_region=${{ secrets.AWS_REGION }}" \
+            -var="bucket_name=${{ env.APP_BUCKET_NAME }}" \
+            -var="environment=${{ inputs.environment }}" \
+            -out=tfplan
+        continue-on-error: true
+        env:          
+          APP_BUCKET_NAME: ${{ env.APP_BUCKET_NAME }}
+
+      - name: Terraform Plan Status
+        if: steps.plan.outcome == 'failure'
+        run: exit 1
+
+      - name: Terraform Apply
+        if: inputs.action == 'apply'
+        run: terraform apply -auto-approve -input=false tfplan
+
+      - name: Terraform Destroy
+        if: inputs.action == 'destroy'
+        run: |
+          terraform destroy -auto-approve -input=false \
+            -var="aws_region=${{ secrets.AWS_REGION }}" \
+            -var="bucket_name=${{ env.APP_BUCKET_NAME }}" \
+            -var="environment=${{ inputs.environment }}"
+        env:          
+          APP_BUCKET_NAME: ${{ env.APP_BUCKET_NAME }}
+
+      - name: Store app bucket info in SSM
+        if: inputs.action == 'apply'
+        run: |
+          set -euo pipefail
+
+          BUCKET_NAME=$(terraform output -raw bucket_name)
+          WEBSITE_ENDPOINT=$(terraform output -raw website_endpoint)
+          WEBSITE_DOMAIN=$(terraform output -raw website_domain)
+
+          aws ssm put-parameter \
+            --name "$APP_SSM_PREFIX/bucket_name" \
+            --type String \
+            --value "$BUCKET_NAME" \
+            --overwrite
+
+          aws ssm put-parameter \
+            --name "$APP_SSM_PREFIX/website_endpoint" \
+            --type String \
+            --value "$WEBSITE_ENDPOINT" \
+            --overwrite
+
+          aws ssm put-parameter \
+            --name "$APP_SSM_PREFIX/website_domain" \
+            --type String \
+            --value "$WEBSITE_DOMAIN" \
+            --overwrite
+
+      - name: Finalize
+        run: |
+          echo "Infrastructure deployment completed." >> $GITHUB_STEP_SUMMARY
+          echo "App bucket was created or updated." >> $GITHUB_STEP_SUMMARY
+          echo "SSM parameters for the app bucket were stored." >> $GITHUB_STEP_SUMMARY
