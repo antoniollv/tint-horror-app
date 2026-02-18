@@ -2,7 +2,7 @@ strips:
   - vignettes:
       - vignette: 'cover.svg'
         bubbles:
-          - x: '12%'
+          - x: '50%'
             y: '28%'
             arrowPosition: 'none'
             text: 'Restless Ghost - Chapter I'
@@ -26,7 +26,7 @@ strips:
   - vignettes:
       - vignette: 'cover.svg'
         bubbles:
-          - x: '12%'
+          - x: '50%'
             y: '28%'
             arrowPosition: 'none'
             text: 'Restless Ghost - Chapter II'
@@ -55,7 +55,7 @@ strips:
   - vignettes:
       - vignette: 'cover.svg'
         bubbles:
-          - x: '10%'
+          - x: '50%'
             y: '28%'
             arrowPosition: 'none'
             text: 'Restless Ghost - Chapter III'
@@ -84,7 +84,7 @@ strips:
   - vignettes:
       - vignette: 'cover.svg'
         bubbles:
-          - x: '12%'
+          - x: '50%'
             y: '28%'
             arrowPosition: 'none'
             text: 'Restless Ghost - Chapter IV'
@@ -113,7 +113,7 @@ strips:
   - vignettes:
       - vignette: 'cover.svg'
         bubbles:
-          - x: '12%'
+          - x: '50%'
             y: '28%'
             arrowPosition: 'none'
             text: 'Restless Ghost - Chapter V'
@@ -157,7 +157,7 @@ strips:
   - vignettes:
       - vignette: 'cover.svg'
         bubbles:
-          - x: '12%'
+          - x: '50%'
             y: '28%'
             arrowPosition: 'none'
             text: 'Restless Ghost - Chapter VI'
@@ -171,15 +171,15 @@ strips:
             fontSize: 'clamp(10px, 2vw, 32px)'
       - vignette: 'cap6-2.svg'
         bubbles:
-          - x: '35%'
+          - x: '65%'
             y: '9%'
             arrowPosition: 'none'
             text: 'Are you sure? Tint'
             fontSize: 'clamp(14px, 2vw, 64px)'
       - vignette: 'cap6-3.svg'
         bubbles: 
-          - x: '15%'
-            y: '40%'
-            arrowPosition: 'none'
-            text: "Under construction!"
-            fontSize: 'clamp(18px, 2vw, 74px)'
+          - x: '60%'
+            y: '6%'
+            arrowPosition: 'left-top'
+            text: 'Who is alone on a ship of the damned?'
+            fontSize: 'clamp(10px, 2vw, 32px)'

@@ -9,6 +9,9 @@ export const arrowPositionStyles = {
     filter: none;
     max-width: none;
     white-space: nowrap;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
 
     &::before {
       display: none;
@@ -71,9 +74,9 @@ export const arrowPositionStyles = {
   `,
   'left-top': css`
     &::before {
-      left: -20px;
-      bottom: calc(var(--arrow) / 1);
-      transform: rotateZ(90deg) scaleX(-1);
+      left: -6%;
+      bottom: 60%;
+      transform: rotateZ(90deg) scaleX(1);
       box-shadow: 
         inset calc(var(--arrow)/3) calc(var(--arrow)/3) 0 0 white;
     }
