@@ -8,7 +8,7 @@
 
 Aplicación web React que muestra tiras de cómics.
 
-Pruebas de concepto de procesos CI/CD
+Pruebas de concepto de procesos CI/CD.
 
 ## Tabla de Contenidos
 
