@@ -11,8 +11,8 @@ import { getEnvValue } from './utils/env.js';
 import { getWrappedIndex } from './utils/stripNavigation.js';
 import { useAutoAdvance } from './hooks/useAutoAdvance.js';
 import { useKeyboardNavigation } from './hooks/useKeyboardNavigation.js';
+import { useSwipeNavigation } from './hooks/useSwipeNavigation.js';
 import { useStripsData } from './hooks/useStripsData.js';
-import { useImagePreload } from './hooks/useImagePreload.js';
 import { useStripViewData } from './hooks/useStripViewData.js';
 
 function App() {
@@ -60,19 +60,23 @@ function App() {
     onAny: () => setIsTimerActive(false)
   });
 
+  useSwipeNavigation({
+    onNext: nextStrip,
+    onPrevious: previousStrip,
+    onSwipe: () => setIsTimerActive(false)
+  });
+
   const { currentStrip, currentVignetteSrc, thumbnailStrips } = useStripViewData({
     strips,
     currentIndex: currentStripIndex,
     imgsPath
   });
 
-  // Actualizar la función selectChapter
   const selectChapter = (chapterIndex) => {
     setChapter(chapterIndex); // Actualiza el capítulo actual
     setCurrentStripIndex(0);  // Reiniciar la viñeta al cambiar de capítulo
+    setIsTimerActive(true);   // Iniciar el carrusel al cambiar de capítulo
   };
-
-  const { isLoaded: isImageLoaded, handleLoad: handleImageLoad } = useImagePreload(currentVignetteSrc);
 
   useEffect(() => {
     setLoadedVignetteSrc('');
@@ -93,32 +97,23 @@ function App() {
   return (
     <div className="App">
 
-      <img
+      <BackgroundImage
+        ref={bgRef}
         src={currentVignetteSrc}
-        onLoad={handleImageLoad}
-        style={{ display: 'none' }}
-        alt="current vignette"
-      />
-      {isImageLoaded && (
-        <BackgroundImage
-          ref={bgRef}
-          key={currentVignetteSrc}
-          src={currentVignetteSrc}
-          onLoad={() => {
+        onLoad={() => {
+          requestAnimationFrame(() => {
             requestAnimationFrame(() => {
-              requestAnimationFrame(() => {
-                setLoadedVignetteSrc(currentVignetteSrc);
-                setTimeout(() => {
-                  if (bgRef.current && bgRef.current.getSvgRect) {
-                    setSvgRect(bgRef.current.getSvgRect());
-                  }
-                }, 100);
-              });
+              setLoadedVignetteSrc(currentVignetteSrc);
+              setTimeout(() => {
+                if (bgRef.current && bgRef.current.getSvgRect) {
+                  setSvgRect(bgRef.current.getSvgRect());
+                }
+              }, 100);
             });
-          }}
-          bubbles={loadedVignetteSrc === currentVignetteSrc ? currentStrip.bubbles : null}
-        />
-      )}
+          });
+        }}
+        bubbles={loadedVignetteSrc === currentVignetteSrc ? currentStrip.bubbles : null}
+      />
       <ThumbnailList
         strips={thumbnailStrips}
         currentIndex={currentStripIndex}
