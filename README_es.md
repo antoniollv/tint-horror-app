@@ -161,7 +161,7 @@ Variables y recursos se parametrizan por entorno (`dev`/`prod`).
 
 ## Secretos de GitHub
 
- solo para bootstrap, workflow de pre-requisitos
+ solo para bootstrap, workflow de pre-requisitos.
 
 - `AWS_ACCESS_KEY_ID`
 - `AWS_SECRET_ACCESS_KEY`
