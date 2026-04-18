@@ -1,13 +1,13 @@
 import { useEffect, useRef } from 'react';
 
 /**
- * Detects vertical swipe gestures on a target element (or the window)
+ * Detects horizontal swipe gestures on a target element (or the window)
  * and calls onNext / onPrevious accordingly.
  *
  * @param {object} params
  * @param {React.RefObject} params.ref      - ref to the element to listen on (optional, defaults to window)
- * @param {function} params.onNext          - called when user swipes UP   (next slide)
- * @param {function} params.onPrevious      - called when user swipes DOWN (previous slide)
+ * @param {function} params.onNext          - called when user swipes LEFT  (next slide)
+ * @param {function} params.onPrevious      - called when user swipes RIGHT (previous slide)
  * @param {function} [params.onSwipe]       - called on any detected swipe (e.g. to stop the timer)
  * @param {number}   [params.threshold=50]  - minimum pixel distance to count as a swipe
  */
@@ -18,36 +18,40 @@ export const useSwipeNavigation = ({
   onSwipe,
   threshold = 50
 }) => {
-  const startY = useRef(null);
+  const startX = useRef(null);
 
   useEffect(() => {
     const target = ref?.current ?? window;
 
     const handleTouchStart = (e) => {
       if (e.touches.length === 1) {
-        startY.current = e.touches[0].clientY;
+        startX.current = e.touches?.[0]?.clientX ?? null;
       }
     };
 
     const handleTouchEnd = (e) => {
-      if (startY.current === null) return;
-      const endY = e.changedTouches[0].clientY;
-      const deltaY = startY.current - endY;
-      startY.current = null;
+      if (startX.current === null) return;
+      const touch = e.changedTouches?.[0];
+      if (!touch) {
+        startX.current = null;
+        return;
+      }
+      const deltaX = startX.current - touch.clientX;
+      startX.current = null;
 
-      if (Math.abs(deltaY) < threshold) return;
+      if (Math.abs(deltaX) < threshold) return;
 
       if (onSwipe) onSwipe();
 
-      if (deltaY > 0) {
-        if (onNext) onNext();           // swipe up → next slide
+      if (deltaX > 0) {
+        if (onNext) onNext();           // swipe left → next slide
       } else {
-        if (onPrevious) onPrevious();   // swipe down → previous slide
+        if (onPrevious) onPrevious();   // swipe right → previous slide
       }
     };
 
     const handleTouchCancel = () => {
-      startY.current = null;
+      startX.current = null;
     };
 
     target.addEventListener('touchstart', handleTouchStart, { passive: true });
