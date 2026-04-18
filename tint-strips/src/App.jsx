@@ -11,6 +11,7 @@ import { getEnvValue } from './utils/env.js';
 import { getWrappedIndex } from './utils/stripNavigation.js';
 import { useAutoAdvance } from './hooks/useAutoAdvance.js';
 import { useKeyboardNavigation } from './hooks/useKeyboardNavigation.js';
+import { useSwipeNavigation } from './hooks/useSwipeNavigation.js';
 import { useStripsData } from './hooks/useStripsData.js';
 import { useStripViewData } from './hooks/useStripViewData.js';
 
@@ -57,6 +58,12 @@ function App() {
     onPrevious: previousStrip,
     onToggleTimer: () => setIsTimerActive((prev) => !prev),
     onAny: () => setIsTimerActive(false)
+  });
+
+  useSwipeNavigation({
+    onNext: nextStrip,
+    onPrevious: previousStrip,
+    onSwipe: () => setIsTimerActive(false)
   });
 
   const { currentStrip, currentVignetteSrc, thumbnailStrips } = useStripViewData({
